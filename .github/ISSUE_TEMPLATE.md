@@ -3,7 +3,7 @@ Checklists for Issue Submission
 
 I confirm that:
 - [ ] I have tested the correct version of ASP.NET Core. Code for RC1 won't run on RC2. Heck you're lucky if it compiles.
-- [ ] I am not using this in proction
+- [ ] I am not using this in production
 - [ ] I am not using this without HTTPS. My HTTPS is TLS1.1 or 1.2
 - [ ] I have turned thrice widdershins, spat on the ground and sacrificed a chicken. 
 
