@@ -7,7 +7,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 using idunno.Authentication.Basic;

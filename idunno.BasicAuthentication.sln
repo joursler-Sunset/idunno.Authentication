@@ -16,6 +16,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.BasicAuthentication.
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.Authentication.Basic", "src\idunno.Authentication.Basic\idunno.Authentication.Basic.xproj", "{98E2DD56-D69E-44FB-829A-154592A15B98}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.Authentication.Basic.Tests", "src\idunno.Authentication.Basic.Tests\idunno.Authentication.Basic.Tests.xproj", "{D835CDE1-A683-4864-831A-7A36201491DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{98E2DD56-D69E-44FB-829A-154592A15B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98E2DD56-D69E-44FB-829A-154592A15B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98E2DD56-D69E-44FB-829A-154592A15B98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D835CDE1-A683-4864-831A-7A36201491DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D835CDE1-A683-4864-831A-7A36201491DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D835CDE1-A683-4864-831A-7A36201491DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D835CDE1-A683-4864-831A-7A36201491DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -37,5 +43,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F6B849CD-26D5-4830-85E7-1628066D27B4} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
 		{98E2DD56-D69E-44FB-829A-154592A15B98} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
+		{D835CDE1-A683-4864-831A-7A36201491DF} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
 	EndGlobalSection
 EndGlobal

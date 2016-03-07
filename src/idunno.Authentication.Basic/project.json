@@ -3,7 +3,7 @@
   "description": "ASP.NET 5 middleware that enables an application to support Basic authentication workflow.",
   "repository": {
     "type": "git",
-    "url": "git://github.com/aspnet/security"
+    "url": "git://github.com/blowdart/idunno.BasicAuthentication"
   },
   "compilationOptions": {
     "warningsAsErrors": true

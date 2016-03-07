@@ -3,9 +3,8 @@
 
 using System;
 using idunno.Authentication.Basic;
-using Microsoft.AspNet.Builder;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Extension methods to add Basic authentication capabilities to an HTTP application pipeline.
