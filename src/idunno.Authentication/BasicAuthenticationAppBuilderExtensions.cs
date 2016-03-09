@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) Barry Dorrans. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using idunno.Authentication.Basic;
+using idunno.Authentication;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class BasicAuthenticationAppBuilderExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="BasicAuthenticationMiddleware"/>to the specified <see cref="IApplicationBuilder"/>, which enables basic authentication capabilities.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseBasicAuthentication(this IApplicationBuilder app)
         {
             if (app == null)
@@ -21,6 +26,12 @@ namespace Microsoft.AspNet.Builder
             return app.UseMiddleware<BasicAuthenticationMiddleware>();
         }
 
+        /// <summary>
+        /// Adds the <see cref="BasicAuthenticationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables basic authentication capabilities.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="CookieAuthenticationOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns
         public static IApplicationBuilder UseBasicAuthentication(this IApplicationBuilder app, Action<BasicAuthenticationOptions> configureOptions)
         {
             if (app == null)

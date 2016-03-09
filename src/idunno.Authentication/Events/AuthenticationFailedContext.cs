@@ -5,7 +5,7 @@ using System;
 
 using Microsoft.AspNet.Http;
 
-namespace idunno.Authentication.Basic
+namespace idunno.Authentication
 {
     public class AuthenticationFailedContext : BaseBasicAuthenticationContext
     {

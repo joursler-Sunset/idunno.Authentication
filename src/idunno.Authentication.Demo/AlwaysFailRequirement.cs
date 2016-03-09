@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Authorization;
 
-namespace idunno.BasicAuthentication.Web
+namespace idunno.Authentication.Demo
 {
     public class AlwaysFailRequirement : AuthorizationHandler<AlwaysFailRequirement>, IAuthorizationRequirement
     {

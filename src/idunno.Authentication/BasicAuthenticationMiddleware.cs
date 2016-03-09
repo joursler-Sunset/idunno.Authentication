@@ -7,12 +7,26 @@ using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 
-using idunno.Authentication.Basic.Events;
-
-namespace idunno.Authentication.Basic
+namespace idunno.Authentication
 {
+    /// <summary>
+    /// Basic authentication middleware component which is added to an HTTP pipeline. This class is not
+    /// created by application code directly, instead it is added by calling the the IAppBuilder 
+    /// UseBasicAuthentication extension method.
+    /// </summary>
     public class BasicAuthenticationMiddleware : AuthenticationMiddleware<BasicAuthenticationOptions>
     {
+        /// <summary>
+        /// Creates an instance of <see cref="BasicAuthenticationMiddleware"/>.
+        /// </summary>
+        /// <remarks>
+        /// This class is not created by application code directly, instead it is added by 
+        /// calling the the IAppBuilder UseBasicAuthentication extension method.
+        /// </remarks>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="loggerFactory">The logger factory to use.</param>
+        /// <param name="encoder">The URL encoder to use.</param>
+        /// <param name="options">Configuration options for the middleware.</param>
         public BasicAuthenticationMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,

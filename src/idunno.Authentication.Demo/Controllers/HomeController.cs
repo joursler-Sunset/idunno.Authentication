@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
 
-namespace idunno.BasicAuthentication.Web.Controllers
+namespace idunno.Authentication.Demo.Controllers
 {
     public class HomeController : Controller
     {

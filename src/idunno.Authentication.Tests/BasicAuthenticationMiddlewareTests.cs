@@ -1,23 +1,28 @@
-﻿
-using System;
-using System.Security.Claims;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication;
-using System.Net.Http;
-using System.Xml.Linq;
-using System.Threading.Tasks;
-using System.Text;
-using Microsoft.Net.Http.Headers;
-using System.Net;
-using System.Linq;
-using Microsoft.AspNet.Authentication;
+﻿// Copyright (c) Barry Dorrans. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace idunno.Authentication.Basic.Tests
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.TestHost;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Microsoft.Net.Http.Headers;
+
+using Xunit;
+
+namespace idunno.Authentication.Tests
 {
     public class BasicAuthenticationMiddlewareTests
     {
@@ -202,45 +207,7 @@ namespace idunno.Authentication.Basic.Tests
             Assert.Equal(false, called);
         }
 
-        [Fact]
-        public async Task ValidateOnForbiddenCalledWhenForbiddenStatusIsReturned()
-        {
-            bool called = false;
-            var server = CreateServer(options =>
-            {
-                options.Events = new BasicAuthenticationEvents
-                {
-                    OnForbidden = context =>
-                    {
-                        called = true;
-                        return Task.FromResult<object>(null);
-                    }
-                };
-            });
-
-            var transaction = await SendAsync(server, "http://example.com/forbidden", "username", "password");
-            Assert.Equal(true, called);
-        }
-
-        [Fact]
-        public async Task ValidateOnUnauthorizedCalledWhenUnauthorizedStatusIsReturned()
-        {
-            bool called = false;
-            var server = CreateServer(options =>
-            {
-                options.Events = new BasicAuthenticationEvents
-                {
-                    OnUnauthorized = context =>
-                    {
-                        called = true;
-                        return Task.FromResult<object>(null);
-                    }
-                };
-            });
-
-            var transaction = await SendAsync(server, "http://example.com/unauthorized", "username", "password");
-            Assert.Equal(true, called);
-        }
+               // Test for onAuthenticationFailed call.
 
         private static TestServer CreateServer(
             Action<BasicAuthenticationOptions> configureOptions, 

@@ -9,7 +9,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "idunno.Authentication.Basic": "1.0.0-*",
+    "idunno.Authentication": "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-rc1-final",
     "Microsoft.AspNet.Testing": "1.0.0-rc1-final",
     "xunit": "2.1.0",

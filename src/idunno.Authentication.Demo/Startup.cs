@@ -9,9 +9,9 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-using idunno.Authentication.Basic;
+using idunno.Authentication;
 
-namespace idunno.BasicAuthentication.Web
+namespace idunno.Authentication.Demo
 {
     public class Startup
     {
@@ -54,7 +54,6 @@ namespace idunno.BasicAuthentication.Web
                     {
                         if (context.Username == context.Password)
                         {
-
                             var claims = new[]
                             {
                                 new Claim(ClaimTypes.NameIdentifier, context.Username)

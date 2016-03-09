@@ -10,9 +10,9 @@ using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace idunno.Authentication.Basic.Events
+namespace idunno.Authentication
 {
-    public class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticationOptions>
+    internal class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticationOptions>
     {
         private const string _Scheme = "Basic";
 
@@ -110,45 +110,20 @@ namespace idunno.Authentication.Basic.Events
             }
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
-            var eventContext = new UnauthorizedContext(Context, Options);
-            await Options.Events.Unauthorized(eventContext);
-
-            if (eventContext.HandledResponse)
-            {
-                return true;
-            }
-            if (eventContext.Skipped)
-            {
-                return false;
-            }
-
             Response.StatusCode = 401;
 
             var headerValue = _Scheme + $" realm=\"{Options.Realm}\""; ;
             Response.Headers.Add(HeaderNames.WWWAuthenticate, headerValue);
 
-            return true;
+            return Task.FromResult(true);
         }
 
-        protected override async Task<bool> HandleForbiddenAsync(ChallengeContext context)
+        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
-            var eventContext = new ForbiddenContext(Context, Options);
-            await Options.Events.Forbidden(eventContext);
-
-            if (eventContext.HandledResponse)
-            {
-                return true;
-            }
-            if (eventContext.Skipped)
-            {
-                return false;
-            }
-
             Response.StatusCode = 403;
-
-            return true;
+            return Task.FromResult(true);
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)
