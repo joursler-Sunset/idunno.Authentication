@@ -11,7 +11,7 @@ namespace idunno.Authentication
     /// </summary>
     public class BasicAuthenticationOptions : AuthenticationOptions
     {
-        string _realm;
+        private string _realm;
 
         /// <summary>
         /// Create an instance of the options initialized with the default values

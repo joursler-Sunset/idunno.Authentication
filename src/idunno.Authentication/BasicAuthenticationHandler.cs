@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -47,8 +48,7 @@ namespace idunno.Authentication
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogInformation($"Failed to decode credentials : {encodedCredentials}", ex);
-                    throw;
+                    throw new Exception($"Failed to decode credentials : {encodedCredentials}", ex);
                 }
 
                 var delimiterIndex = decodedCredentials.IndexOf(':');
@@ -70,24 +70,16 @@ namespace idunno.Authentication
 
                 await Options.Events.ValidateCredentials(validateCredentialsContext);
 
-                if (validateCredentialsContext.HandledResponse)
+                if (validateCredentialsContext.AuthenticationTicket != null)
                 {
-                    if (validateCredentialsContext.AuthenticationTicket != null)
-                    {
-                        Logger.LogInformation($"Credentials validated for {username}");
-                        return AuthenticateResult.Success(validateCredentialsContext.AuthenticationTicket);
-                    }
-                    else
-                    {
-                        Logger.LogInformation($"Credential validation failed for {username}");
-                        return AuthenticateResult.Failed("Invalid credentials.");
-                    }
+                    Logger.LogInformation($"Credentials validated for {username}");
+                    return AuthenticateResult.Success(validateCredentialsContext.AuthenticationTicket);
                 }
-
-                const string validationNotHandled = "Credential validation not handled.";
-                Logger.LogError(validationNotHandled);
-                return AuthenticateResult.Failed(validationNotHandled);
-
+                else
+                {
+                    Logger.LogInformation($"Credential validation failed for {username}");
+                    return AuthenticateResult.Failed("Invalid credentials.");
+                }
             }
             catch (Exception ex)
             {
@@ -115,7 +107,7 @@ namespace idunno.Authentication
             Response.StatusCode = 401;
 
             var headerValue = _Scheme + $" realm=\"{Options.Realm}\""; ;
-            Response.Headers.Add(HeaderNames.WWWAuthenticate, headerValue);
+            Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
 
             return Task.FromResult(true);
         }

@@ -9,7 +9,8 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Authentication": "1.0.0-rc1-final"
+    "Microsoft.AspNet.Authentication": "1.0.0-rc1-final",
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-rc1-final"
   },
   "frameworks": {
     "dnx451": { },

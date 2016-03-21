@@ -56,14 +56,13 @@ namespace idunno.Authentication.Demo
                         {
                             var claims = new[]
                             {
-                                new Claim(ClaimTypes.NameIdentifier, context.Username)
+                                new Claim(ClaimTypes.NameIdentifier, context.Username),
+                                new Claim(ClaimTypes.Name, context.Username)
                             };
 
                             context.AuthenticationTicket = new AuthenticationTicket(
                                 new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                                 new AuthenticationProperties(), context.Options.AuthenticationScheme);
-
-                            context.HandleResponse();
                         }
 
                         return Task.FromResult<object>(null);

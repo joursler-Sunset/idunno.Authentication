@@ -34,26 +34,6 @@ namespace idunno.Authentication
             BasicAuthenticationOptions options)
             : base(next, options, loggerFactory, encoder)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             if (Options.Events == null)
             {
                 Options.Events = new BasicAuthenticationEvents();
