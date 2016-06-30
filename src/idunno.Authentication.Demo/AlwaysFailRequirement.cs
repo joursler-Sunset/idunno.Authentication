@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace idunno.Authentication.Demo
 {
@@ -6,11 +7,12 @@ namespace idunno.Authentication.Demo
         AuthorizationHandler<AlwaysFailRequirement>, 
         IAuthorizationRequirement
     {
-        protected override void Handle(
-            AuthorizationContext context, 
+        protected override Task HandleRequirementAsync(
+            AuthorizationHandlerContext context, 
             AlwaysFailRequirement requirement)
         {
-            return;
+            context.Fail();
+            return Task.FromResult(0);
         }
     }
 }
