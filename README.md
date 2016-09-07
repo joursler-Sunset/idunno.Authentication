@@ -1,7 +1,5 @@
 ﻿# idunno.Authentication
 
-**Now updated for RC2 and the great namespace renaming of 2016. CORE ALL THE THINGS. Still not production ready though. Stop that.**
-
 This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET Core. 
 
 It is meant as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using.
@@ -56,6 +54,26 @@ are then it will consider that a valid login, create claims from the ticket, the
 has handled the authentication request.
 
 Of course you'd never implement such a simple validator would you? No? Good. Have a cookie.
+
+## How do I use this in production?
+
+Seriously? I'd never recommend you use basic authentication in production, but if you must here are some ideas on how to harden it. 
+
+1. In your `OnValidateCredentials` implementation keep a count of failed login attempts, and the IP addresses they come from.
+2. Lock out accounts after X failed login attempts, where X is a count you feel is reasonable for your situation.
+3. Implement the lock out so it unlocks after Y minutes. In case of repeated attacks increase Y.
+4. Be careful when locking out your administration accounts. Have at least one admin account that is not exposed via basic auth, so an attacker cannot lock you out of your site just by sending an incorrect password.
+5. Throttle attempts from an IP address, especially one which sends lots of incorrect passwords. Considering dropping/banning attempts from an IP address that appears to be under the control of an attacker. Only you can decide what this means, what consitutes legimate traffic varies from application to application.
+6. Always use HTTPS. Redirect all HTTP traffic to HTTPS using `[RequireHttps]`. You can apply this to all of your site via a filter;
+
+    ```c#
+    services.Configure<MvcOptions>(options =>
+    {
+        options.Filters.Add(new RequireHttpsAttribute());
+    }
+    ```
+7. Consider implementing HSTS. 
+8. Reconsider your life choices, and look at using OAuth2 or OpenIDConnect instead.
 
 ### Notes
 
