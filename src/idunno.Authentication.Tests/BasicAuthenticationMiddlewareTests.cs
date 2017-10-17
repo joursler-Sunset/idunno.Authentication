@@ -47,7 +47,7 @@ namespace idunno.Authentication.Tests
         {
             var server = CreateServer(new BasicAuthenticationOptions());
 
-            var transaction = await SendAsync(server, "http://example.com/", "username", "password");       
+            var transaction = await SendAsync(server, "http://example.com/", "username", "password");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
@@ -197,8 +197,9 @@ namespace idunno.Authentication.Tests
             Assert.Equal(false, called);
         }
 
+
         private static TestServer CreateServer(
-            BasicAuthenticationOptions configureOptions, 
+            BasicAuthenticationOptions configureOptions,
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null)
         {

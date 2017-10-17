@@ -28,11 +28,11 @@ namespace idunno.Authentication
 
             if (!authorizationHeader.StartsWith(_Scheme + ' ', StringComparison.OrdinalIgnoreCase))
             {
-                return AuthenticateResult.Success(ticket: null);
+                return AuthenticateResult.Skip();
             }
 
             string encodedCredentials = encodedCredentials = authorizationHeader.Substring(_Scheme.Length).Trim();
-            
+
             if (string.IsNullOrEmpty(encodedCredentials))
             {
                 const string noCredentialsMessage = "No credentials";

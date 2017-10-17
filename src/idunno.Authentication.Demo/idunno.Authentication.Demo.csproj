@@ -8,6 +8,9 @@
     <PackageId>idunno.Authentication.Demo</PackageId>
     <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6;portable-net45+win8</PackageTargetFallback>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="1.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.3" />
   </ItemGroup>
 
 </Project>
