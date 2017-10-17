@@ -1,23 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6462A7D2-5018-443D-BF20-B7E407E3FEA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E2FF6F9D-3B6D-4D51-8EE5-F3A8789B0B96}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		license.txt = license.txt
 		nuget.config = nuget.config
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.Authentication.Demo", "src\idunno.Authentication.Demo\idunno.Authentication.Demo.xproj", "{F6B849CD-26D5-4830-85E7-1628066D27B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "idunno.Authentication.Demo", "src\idunno.Authentication.Demo\idunno.Authentication.Demo.csproj", "{F6B849CD-26D5-4830-85E7-1628066D27B4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.Authentication", "src\idunno.Authentication\idunno.Authentication.xproj", "{98E2DD56-D69E-44FB-829A-154592A15B98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "idunno.Authentication", "src\idunno.Authentication\idunno.Authentication.csproj", "{98E2DD56-D69E-44FB-829A-154592A15B98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "idunno.Authentication.Tests", "src\idunno.Authentication.Tests\idunno.Authentication.Tests.xproj", "{D835CDE1-A683-4864-831A-7A36201491DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "idunno.Authentication.Tests", "src\idunno.Authentication.Tests\idunno.Authentication.Tests.csproj", "{D835CDE1-A683-4864-831A-7A36201491DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,5 +44,8 @@ Global
 		{F6B849CD-26D5-4830-85E7-1628066D27B4} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
 		{98E2DD56-D69E-44FB-829A-154592A15B98} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
 		{D835CDE1-A683-4864-831A-7A36201491DF} = {6462A7D2-5018-443D-BF20-B7E407E3FEA6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80233162-A195-4B57-8FF8-44ACED97629D}
 	EndGlobalSection
 EndGlobal

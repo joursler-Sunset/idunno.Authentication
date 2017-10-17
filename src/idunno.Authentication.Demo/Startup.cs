@@ -61,7 +61,7 @@ namespace idunno.Authentication.Demo
                             context.Ticket = new AuthenticationTicket(
                                 new ClaimsPrincipal(
                                     new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                                new AuthenticationProperties(), 
+                                new AuthenticationProperties(),
                                 context.Options.AuthenticationScheme);
                         }
 
