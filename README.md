@@ -1,6 +1,6 @@
 ﻿# idunno.Authentication
 
-Now updated for .NET Core 2.0. Really though? You're going to update to version 2.0 and still use Basic Auth? You're a horrible person, you know that, right?
+Now updated for ASP.NET Core 2.0. Really though? You're going to update to version 2.0 and still use Basic Auth? You're a horrible person, you know that, right?
 
 This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET Core. 
 
@@ -102,7 +102,16 @@ Seriously? I'd never recommend you use basic authentication in production, but i
 7. Implement HSTS. 
 8. Reconsider your life choices, and look at using OAuth2 or OpenIDConnect instead.
 
-### Notes
+## What about older versions of ASP.NET Core?
+
+Older versions are available in the appropriate branch.
+
+| ASP.NET Core MVC Version | Branch                                                           |
+|--------------------------|------------------------------------------------------------------|
+| 1.1                      | [rel/1.1.1](https://github.com/blowdart/idunno.Authentication/tree/rel/1.1.1) |
+| 1.0                      | [rel/1.0.0](https://github.com/blowdart/idunno.Authentication/tree/rel/1.0.0) |
+
+## Notes
 
 Basic Authentication sends credentials unencrypted. You should only use it over [HTTPS](https://en.wikipedia.org/wiki/HTTPS). 
 
