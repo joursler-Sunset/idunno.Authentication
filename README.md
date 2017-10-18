@@ -1,5 +1,7 @@
 ﻿# idunno.Authentication
 
+Now updated for .NET Core 2.0. Really though? You're going to update to version 2.0 and still use Basic Auth? You're a horrible person, you know that, right?
+
 This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET Core. 
 
 It is meant as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using.
@@ -11,47 +13,72 @@ First acquire an HTTPS certificate (see Notes below). Apply it to your website. 
 Remember this is meant as a demonstration on how to write middleware. Yes, this could be easier, 
 I could put a package on nuget, but **it's not meant to be for use in production**.
 
-In your web application add a reference to the package, then in the `Configure` method in `startup.cs` call
-`app.UseBasicAuthentication()`, providing a delegate for `OnValidateCredentials` to validate any 
-user name and password sent with requests and turn that information into an AuthenticationTicket, set it
-on the `context.AuthenticationTicket` property and call `context.HandleResponse()`.
+In your web application add a reference to the package, then in the `ConfigureServices` method in `startup.cs` call
+`app.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).UseBasicAuthentication(...);` with your options, 
+providing a delegate for `OnValidateCredentials` to validate any user name and password sent with requests and turn that information 
+into an `ClaimsPrincipal`, set it on the `context.Principal` property and call `context.Success()`.
+
+If you change your scheme name in the options for the basic authentication handler you need to change the scheme name in 
+`AddAuthentication()` to ensure it's used on every request which ends in an endpoint that requires authorization.
+
+You should also add `app.UseAuthentication();` in the `Configure` method, otherwise nothing will ever get called.
 
 You can also specify the Realm used to isolate areas of a web site from one another.
 
 For example;
 
 ```c#
-app.UseBasicAuthentication(new BasicAuthenticationOptions 
+public void ConfigureServices(IServiceCollection services)
 {
-    Realm = "idunno",
-    Events = new BasicAuthenticationEvents
-    {
-        OnValidateCredentials = context =>
-        {
-            if (context.Username == context.Password)
+    services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+            .AddBasic(options =>
             {
-                var claims = new[]
+                options.Realm = "idunno";
+                options.Events = new BasicAuthenticationEvents
                 {
-                    new Claim(ClaimTypes.NameIdentifier, context.Username)
+                    OnValidateCredentials = context =>
+                    {
+                        if (context.Username == context.Password)
+                        {
+                            var claims = new[]
+                            {
+                                new Claim(
+                                    ClaimTypes.NameIdentifier, 
+                                    context.Username, 
+                                    ClaimValueTypes.String, 
+                                    context.Options.ClaimsIssuer),
+                                new Claim(
+                                    ClaimTypes.Name, 
+                                    context.Username, 
+                                    ClaimValueTypes.String, 
+                                    context.Options.ClaimsIssuer)
+                            };
+
+                            context.Principal = new ClaimsPrincipal(
+                                new ClaimsIdentity(claims, context.Scheme.Name));
+                            context.Success();
+                        }
+
+                        return Task.CompletedTask;
+                    }
                 };
+            });
+    
+    // All the other service configuration.
+}
 
-                context.Ticket = new AuthenticationTicket(
-                    new ClaimsPrincipal(
-					    new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
-                    new AuthenticationProperties(), 
-					context.Options.AuthenticationScheme);
-             }
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    app.UseAuthentication();
 
-             return Task.FromResult<object>(null);
-         }
-     }
-});
+    // All the other app configuration.
+}
 ```
 
 In the sample you can see that the delegate checks if the user name and password are identical. If they
-are then it will consider that a valid login, create claims from the ticket, then create an
-`Authentication` ticket containing a principal which contains the claims, then tell ASP.NET Core it 
-has handled the authentication request.
+are then it will consider that a valid login, create set of claims about the user, using the `ClaimsIssuer` from the handler options, 
+then create an `ClaimsPrincipal` from those claims, using the `SchemeName` from the handler options, then finally call `context.Success();`
+to show there's been a successful authentication.
 
 Of course you'd never implement such a simple validator would you? No? Good. Have a cookie.
 
@@ -72,7 +99,7 @@ Seriously? I'd never recommend you use basic authentication in production, but i
         options.Filters.Add(new RequireHttpsAttribute());
     }
     ```
-7. Consider implementing HSTS. 
+7. Implement HSTS. 
 8. Reconsider your life choices, and look at using OAuth2 or OpenIDConnect instead.
 
 ### Notes

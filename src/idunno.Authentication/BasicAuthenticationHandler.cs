@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace idunno.Authentication
@@ -18,17 +20,41 @@ namespace idunno.Authentication
     {
         private const string _Scheme = "Basic";
 
+        public BasicAuthenticationHandler(
+            IOptionsMonitor<BasicAuthenticationOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+            ISystemClock clock) : base(options, logger, encoder, clock)
+        {
+        }
+
+        /// <summary>
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
+        /// If it is not provided a default instance is supplied which does nothing when the methods are called.
+        /// </summary>
+        protected new BasicAuthenticationEvents Events
+        {
+            get { return (BasicAuthenticationEvents)base.Events; }
+            set { base.Events = value; }
+        }
+
+        /// <summary>
+        /// Creates a new instance of the events instance.
+        /// </summary>
+        /// <returns>A new instance of the events instance.</returns>
+        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new BasicAuthenticationEvents());
+
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             string authorizationHeader = Request.Headers["Authorization"];
             if (string.IsNullOrEmpty(authorizationHeader))
             {
-                return AuthenticateResult.Fail("No authorization header.");
+                return AuthenticateResult.NoResult();
             }
 
             if (!authorizationHeader.StartsWith(_Scheme + ' ', StringComparison.OrdinalIgnoreCase))
             {
-                return AuthenticateResult.Skip();
+                return AuthenticateResult.NoResult();
             }
 
             string encodedCredentials = encodedCredentials = authorizationHeader.Substring(_Scheme.Length).Trim();
@@ -63,7 +89,7 @@ namespace idunno.Authentication
                 var username = decodedCredentials.Substring(0, delimiterIndex);
                 var password = decodedCredentials.Substring(delimiterIndex + 1);
 
-                var validateCredentialsContext = new ValidateCredentialsContext(Context, Options)
+                var validateCredentialsContext = new ValidateCredentialsContext(Context, Scheme, Options)
                 {
                     Username = username,
                     Password = password
@@ -71,62 +97,47 @@ namespace idunno.Authentication
 
                 await Options.Events.ValidateCredentials(validateCredentialsContext);
 
-                if (validateCredentialsContext.Ticket != null)
+                if (validateCredentialsContext.Result != null)
                 {
-                    Logger.LogInformation($"Credentials validated for {username}");
-                    return AuthenticateResult.Success(validateCredentialsContext.Ticket);
+                    var ticket = new AuthenticationTicket(validateCredentialsContext.Principal, Scheme.Name);
+                    return AuthenticateResult.Success(ticket);
                 }
-                else
-                {
-                    Logger.LogInformation($"Credential validation failed for {username}");
-                    return AuthenticateResult.Fail("Invalid credentials.");
-                }
+
+                return AuthenticateResult.NoResult();
             }
             catch (Exception ex)
             {
-                var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
+                var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
                 {
                     Exception = ex
                 };
 
                 await Options.Events.AuthenticationFailed(authenticationFailedContext);
-                if (authenticationFailedContext.HandledResponse)
+
+                if (authenticationFailedContext.Result.Succeeded)
                 {
-                    return AuthenticateResult.Success(authenticationFailedContext.Ticket);
+                    return AuthenticateResult.Success(authenticationFailedContext.Result.Ticket);
                 }
-                if (authenticationFailedContext.Skipped)
+
+                if (authenticationFailedContext.Result.None)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.NoResult();
                 }
 
                 throw;
             }
         }
 
-        protected override Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            var authResult = await HandleAuthenticateOnceSafeAsync();
+
             Response.StatusCode = 401;
 
-            var headerValue = _Scheme + $" realm=\"{Options.Realm}\""; ;
+            var headerValue = _Scheme + $" realm=\"{Options.Realm}\"";
             Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
 
-            return Task.FromResult(true);
-        }
-
-        protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
-        {
-            Response.StatusCode = 403;
-            return Task.FromResult(true);
-        }
-
-        protected override Task HandleSignOutAsync(SignOutContext context)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task HandleSignInAsync(SignInContext context)
-        {
-            throw new NotSupportedException();
+            return;
         }
     }
 }

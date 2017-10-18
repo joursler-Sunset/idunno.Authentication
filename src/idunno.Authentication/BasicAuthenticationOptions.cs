@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication;
 
 using idunno.Authentication;
 
@@ -11,18 +11,18 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Contains the options used by the BasicAuthenticationMiddleware
     /// </summary>
-    public class BasicAuthenticationOptions : AuthenticationOptions, IOptions<BasicAuthenticationOptions>
+    /// <summary>
+    /// Contains the options used by the BasicAuthenticationMiddleware
+    /// </summary>
+    public class BasicAuthenticationOptions : AuthenticationSchemeOptions
     {
         private string _realm;
 
         /// <summary>
         /// Create an instance of the options initialized with the default values
         /// </summary>
-        public BasicAuthenticationOptions() : base()
+        public BasicAuthenticationOptions()
         {
-            AuthenticationScheme = BasicAuthenticationDefaults.AuthenticationScheme;
-            AutomaticAuthenticate = true;
-            AutomaticChallenge = true;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
 
             set
             {
-                if (!IsAscii(value))
+                if (!string.IsNullOrEmpty(value) && !IsAscii(value))
                 {
                     throw new ArgumentOutOfRangeException("Realm", "Realm must be US ASCII");
                 }
@@ -58,15 +58,8 @@ namespace Microsoft.AspNetCore.Builder
         /// The application may implement the interface fully, or it may create an instance of BasicAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public IBasicAuthenticationEvents Events { get; set; } = new BasicAuthenticationEvents();
+        public new BasicAuthenticationEvents Events { get; set; } = new BasicAuthenticationEvents();
 
-        BasicAuthenticationOptions IOptions<BasicAuthenticationOptions>.Value
-        {
-            get
-            {
-                return this;
-            }
-        }
 
         private bool IsAscii(string input)
         {

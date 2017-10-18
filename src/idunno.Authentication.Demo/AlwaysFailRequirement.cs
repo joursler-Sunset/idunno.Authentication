@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace idunno.Authentication.Demo
 {
-    public class AlwaysFailRequirement : 
-        AuthorizationHandler<AlwaysFailRequirement>, 
+    public class AlwaysFailRequirement :
+        AuthorizationHandler<AlwaysFailRequirement>,
         IAuthorizationRequirement
     {
         protected override Task HandleRequirementAsync(
-            AuthorizationHandlerContext context, 
+            AuthorizationHandlerContext context,
             AlwaysFailRequirement requirement)
         {
             context.Fail();
