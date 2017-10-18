@@ -130,7 +130,7 @@ namespace idunno.Authentication
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            var authResult = await HandleAuthenticateOnceSafeAsync();
+            await HandleAuthenticateOnceSafeAsync();
 
             Response.StatusCode = 401;
 
