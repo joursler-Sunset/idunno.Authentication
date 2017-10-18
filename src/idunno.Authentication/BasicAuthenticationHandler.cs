@@ -128,16 +128,14 @@ namespace idunno.Authentication
             }
         }
 
-        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            await HandleAuthenticateOnceSafeAsync();
-
             Response.StatusCode = 401;
 
             var headerValue = _Scheme + $" realm=\"{Options.Realm}\"";
             Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
 
-            return;
+            return Task.CompletedTask;
         }
     }
 }
