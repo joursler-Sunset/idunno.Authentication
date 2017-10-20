@@ -54,6 +54,17 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the handler will prompt for authentication on HTTP requests.
+        /// </summary>
+        /// <remarks>
+        /// If you set this to true you're a horrible person.
+        /// </remarks>
+        public bool AllowInsecureProtocol
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// The object provided by the application to process events raised by the basic authentication middleware.
         /// The application may implement the interface fully, or it may create an instance of BasicAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
