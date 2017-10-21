@@ -82,7 +82,7 @@ to show there's been a successful authentication.
 
 Of course you'd never implement such a simple validator would you? No? Good. Have a cookie.
 
-The handler will throw an exception if wired up in a site not running on HTTPS (thanks to @alexwiese for the original idea and PR)
+The handler will throw an exception if wired up in a site not running on HTTPS (thanks to [@alexwiese](https://github.com/alexwiese) for the original idea and PR)
 and will refuse to respond to the challenge flow which ends up prompting the browser to ask for a username and password. 
 You can override this if you're a horrible person by setting `AllowInsecureProtocol` to `true` in the handler options. 
 If you do this you deserve everything you get. If you're using a non-interactive client, and are sending a username and password to a 
