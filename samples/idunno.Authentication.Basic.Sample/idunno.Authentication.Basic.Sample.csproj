@@ -3,12 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <AssemblyName>idunno.Authentication.Demo</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>idunno.Authentication.Demo</PackageId>
-    <AssemblyVersion>2.0.3.0</AssemblyVersion>
-    <FileVersion>2.0.3.0</FileVersion>
-    <Version>2.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\idunno.Authentication\idunno.Authentication.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-*" />
+    <ProjectReference Include="..\..\src\idunno.Authentication.Basic\idunno.Authentication.Basic.csproj" />
   </ItemGroup>
 
 </Project>

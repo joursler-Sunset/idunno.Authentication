@@ -8,14 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using System.IO;
 
-namespace idunno.Authentication
+namespace idunno.Authentication.Basic
 {
     internal class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticationOptions>
     {
@@ -39,11 +37,13 @@ namespace idunno.Authentication
             set { base.Events = value; }
         }
 
+        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new BasicAuthenticationEvents());
+
         /// <summary>
         /// Creates a new instance of the events instance.
         /// </summary>
         /// <returns>A new instance of the events instance.</returns>
-        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new BasicAuthenticationEvents());
+        //protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new BasicAuthenticationEvents());
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -96,7 +96,7 @@ namespace idunno.Authentication
                     Password = password
                 };
 
-                await Options.Events.ValidateCredentials(validateCredentialsContext);
+                await Events.ValidateCredentials(validateCredentialsContext);
 
                 if (validateCredentialsContext.Result != null)
                 {
@@ -108,23 +108,17 @@ namespace idunno.Authentication
             }
             catch (Exception ex)
             {
-                var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
+                var authenticationFailedContext = new BasicAuthenticationFailedContext(Context, Scheme, Options)
                 {
                     Exception = ex
                 };
 
-                await Options.Events.AuthenticationFailed(authenticationFailedContext);
+                await Events.AuthenticationFailed(authenticationFailedContext);
 
-                if (authenticationFailedContext.Result.Succeeded)
+                if (authenticationFailedContext.Result != null)
                 {
-                    return AuthenticateResult.Success(authenticationFailedContext.Result.Ticket);
+                    return authenticationFailedContext.Result;
                 }
-
-                if (authenticationFailedContext.Result.None)
-                {
-                    return AuthenticateResult.NoResult();
-                }
-
                 throw;
             }
         }
@@ -147,7 +141,7 @@ namespace idunno.Authentication
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
             }
 
-            return Task.CompletedTask;;
+            return Task.CompletedTask;
         }
     }
 }

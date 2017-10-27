@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 
-using idunno.Authentication;
+using idunno.Authentication.Basic;
 
 namespace Microsoft.AspNetCore.Builder
 {

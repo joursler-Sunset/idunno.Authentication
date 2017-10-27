@@ -20,7 +20,9 @@ using Microsoft.Net.Http.Headers;
 
 using Xunit;
 
-namespace idunno.Authentication.Tests
+using idunno.Authentication.Basic;
+
+namespace idunno.Authentication.Test
 {
     public class BasicAuthenticationHandlerTests
     {
@@ -132,8 +134,7 @@ namespace idunno.Authentication.Tests
                 {
                     OnValidateCredentials = context =>
                     {
-
-                        return Task.FromResult<object>(null);
+                        return Task.CompletedTask;
                     }
                 }
             });
@@ -153,7 +154,7 @@ namespace idunno.Authentication.Tests
                     OnValidateCredentials = context =>
                     {
                         called = true;
-                        return Task.FromResult<object>(null);
+                        return Task.CompletedTask;
                     }
                 }
             });
@@ -173,7 +174,7 @@ namespace idunno.Authentication.Tests
                     OnValidateCredentials = context =>
                     {
                         called = true;
-                        return Task.FromResult<object>(null);
+                        return Task.CompletedTask;
                     }
                 }
             });
@@ -206,7 +207,7 @@ namespace idunno.Authentication.Tests
                     OnValidateCredentials = context =>
                     {
                         called = true;
-                        return Task.FromResult<object>(null);
+                        return Task.CompletedTask;
                     }
                 }
             });
@@ -215,7 +216,58 @@ namespace idunno.Authentication.Tests
             Assert.True(called);
         }
 
-        private static TestServer CreateServer(
+        [Fact]
+        public async Task ValidateOnValidateCredentialsIsNotCalledWhenTheAuthorizationHeaderHasNoCredentials()
+        {
+            bool called = false;
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        called = true;
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            var transaction = await SendAsyncWithHeaderValue(server, "https://example.com/", "");
+            Assert.False(called);
+        }
+
+        [Fact]
+        public async Task ValidateOnAuthenticationFailedCalledIfExceptionHappensInValidateCredentials()
+        {
+            const string exceptionMessage = "Something bad happened.";
+
+            bool called = false;
+            string actualExceptionMessage = null;
+
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        throw new Exception(exceptionMessage);
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        called = true;
+                        actualExceptionMessage = context.Exception.Message;
+                        context.Fail(context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            var transaction = await SendAsync(server, "http://example.com/", "username", "password");
+            Assert.True(called);
+            Assert.Equal(exceptionMessage, actualExceptionMessage);
+        }
+
+    private static TestServer CreateServer(
             BasicAuthenticationOptions configureOptions,
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null)
@@ -284,6 +336,29 @@ namespace idunno.Authentication.Tests
                 var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
                 request.Headers.Add(HeaderNames.Authorization, $"{scheme} {encodedCredentials}");
             }
+            var transaction = new Transaction
+            {
+                Request = request,
+                Response = await server.CreateClient().SendAsync(request),
+            };
+            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
+
+            if (transaction.Response.Content != null &&
+                transaction.Response.Content.Headers.ContentType != null &&
+                transaction.Response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                transaction.ResponseElement = XElement.Parse(transaction.ResponseText);
+            }
+            return transaction;
+        }
+
+        private static async Task<Transaction> SendAsyncWithHeaderValue(TestServer server, string uri, string authorizationHeaderValue, string scheme = "Basic")
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            byte[] credentialsAsBytes = Encoding.UTF8.GetBytes(authorizationHeaderValue.ToCharArray());
+            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
+            request.Headers.Add(HeaderNames.Authorization, scheme+ " " + encodedCredentials);
+
             var transaction = new Transaction
             {
                 Request = request,

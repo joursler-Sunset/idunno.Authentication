@@ -4,14 +4,13 @@
 using System;
 
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace idunno.Authentication
+namespace idunno.Authentication.Basic
 {
-    public class AuthenticationFailedContext : ResultContext<BasicAuthenticationOptions>
+    public class BasicAuthenticationFailedContext : ResultContext<BasicAuthenticationOptions>
     {
-        public AuthenticationFailedContext(
+        public BasicAuthenticationFailedContext(
             HttpContext context,
             AuthenticationScheme scheme,
             BasicAuthenticationOptions options)

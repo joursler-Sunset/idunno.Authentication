@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
+using idunno.Authentication.Basic;
+
 namespace idunno.Authentication.Demo
 {
     public class Startup

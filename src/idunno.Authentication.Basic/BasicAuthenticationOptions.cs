@@ -4,9 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 
-using idunno.Authentication;
-
-namespace Microsoft.AspNetCore.Builder
+namespace idunno.Authentication.Basic
 {
     /// <summary>
     /// Contains the options used by the BasicAuthenticationMiddleware
@@ -69,7 +67,13 @@ namespace Microsoft.AspNetCore.Builder
         /// The application may implement the interface fully, or it may create an instance of BasicAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public new BasicAuthenticationEvents Events { get; set; } = new BasicAuthenticationEvents();
+        public new BasicAuthenticationEvents Events
+
+        {
+            get { return (BasicAuthenticationEvents)base.Events; }
+
+            set { base.Events = value; }
+        }
 
 
         private bool IsAscii(string input)
