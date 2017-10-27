@@ -4,7 +4,7 @@ This repository contains a collection of various authentication mechanisms for A
 
 * [Basic Authentication](src/idunno.Authentication.Basic/)
 * [Certificate Authentication](src/idunno.Authentication.Certificate/)
-* 
+ 
 Basic Authentication started as a demonstration of how to write authentication middleware and was not 
 as something you would seriously consider using, but some people want Basic Authentication and 
 Certificate Authentication is a common request on the ASP.NET Core Security repo, so I am releasing my own versions of them.
