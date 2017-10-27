@@ -1,17 +1,14 @@
 ﻿# idunno.Authentication.Basic
 
-Now updated for ASP.NET Core 2.0. Really though? You're going to update to version 2.0 and still use Basic Auth? You're a horrible person, you know that, right?
-
 This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET Core. 
 
-It is meant as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using.
+It started as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using, but enough of
+you want to go with the world's worse authentication standard, so here we are. *You* are responsible for hardening it.
 
 ## How do I use this?
 
-First acquire an HTTPS certificate (see Notes below). Apply it to your website. Remember to renew it in two years.
-
-Remember this is meant as a demonstration on how to write middleware. Yes, this could be easier, 
-I could put a package on nuget, but **it's not meant to be for use in production**.
+First acquire an HTTPS certificate (see Notes below). Apply it to your website. Remember to renew it when it expires, or go the
+Lets Encrypt route and look like a phishing site.
 
 In your web application add a reference to the package, then in the `ConfigureServices` method in `startup.cs` call
 `app.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).UseBasicAuthentication(...);` with your options, 
@@ -86,11 +83,11 @@ The handler will throw an exception if wired up in a site not running on HTTPS a
 which ends up prompting the browser to ask for a username and password. You can override this if you're a horrible person by
 setting `AllowInsecureProtocol` to `true` in the handler options. If you do this you deserve everything you get. If you're 
 using a non-interactive client, and are sending a username and password to a server over HTTP the handler will not throw and
-will process the authentication header because frankly it's too late, you've sent everything in place text, what's the point of anything?
+will process the authentication header because frankly it's too late, you've sent everything in plain text, what's the point?
 
 ## How do I use this in production?
 
-Seriously? I'd never recommend you use basic authentication in production, but if you must here are some ideas on how to harden it. 
+I'd never recommend you use basic authentication in production, but, if you must here are some ideas on how to harden your validation routine. 
 
 1. In your `OnValidateCredentials` implementation keep a count of failed login attempts, and the IP addresses they come from.
 2. Lock out accounts after X failed login attempts, where X is a count you feel is reasonable for your situation.
@@ -105,7 +102,8 @@ Seriously? I'd never recommend you use basic authentication in production, but i
         options.Filters.Add(new RequireHttpsAttribute());
     }
     ```
-7. Implement HSTS. 
+7. Implement [HSTS](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security) and [preload](https://hstspreload.org/) 
+   your site if your site is going to be accessed through a browser.
 8. Reconsider your life choices, and look at using OAuth2 or OpenIDConnect instead.
 
 ## What about older versions of ASP.NET Core?

@@ -7,21 +7,20 @@ The following guidelines for contribution should be followed if you want to subm
 ## How to prepare
 
 * You need a [GitHub account](https://github.com/signup/free)
-* Submit an [issue ticket](https://github.com/blowdart/idunno.BasicAuthentication/issues) for your issue if there is no one yet.
-	* If your issue attempts to fix something to make the code more suitable for use in production just stop, don't.
-        * Describe the issue and include steps to reproduce if it's a bug.
-	* Ensure to mention the earliest version that you know is affected.
+* Submit an [issue](https://github.com/blowdart/idunno.Authentication/issues) for your issue if there isn't yet.
+    * If your issue asks how to harden any of the authentication handlers against hackers it will be closed immediatly. Suggestions for this are in the readme.
+* Describe the issue and include steps to reproduce the problem if it's a bug.
+* Ensure you mention the earliest version that you know is affected.
 * If you are able and want to fix this, fork the repository on GitHub
 
 ## Make Changes
 
 * In your forked repository, create a topic branch for your upcoming patch. (e.g. `feature--onlyworkonssl`)
-	* Usually this is based on the master branch.
-	* Create a branch based on master; avoid working directly on the `master` branch.
-* Make sure you stick to the coding style that is used already. All code should contain a suitable amount of self loathing for even encouraging the use of basic authentication.
+    * Usually this is based on the master branch.
+    * Create a branch based on master; avoid working directly on the `master` branch.
+* Make sure you stick to the coding style that is used already.
 * Make commits of logical units and describe them properly.
 * Check for unnecessary whitespace with `git diff --check` before committing.
-
 * If possible, submit tests to your patch / new feature so it can be tested easily.
 * Assure nothing is broken by running all the tests. Of course if you want to submit tests that would be just super.
 

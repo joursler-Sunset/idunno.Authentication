@@ -2,15 +2,14 @@ Checklists for Pull requests
 ----------------------------
 
 About pull request itself:
-- [X] I am submitting a pull request:)
-- [ ] My submission does one logical thing only (one bugfix, one new feature). If I will want to supply multiple logical changes, I will submit multiple pull requests.
-- [ ] I have read and understood CONTRIBUTING guide
+- [X] I am submitting a pull request :)
 - [ ] I have already created an issue and referred to it in the commit message.
-- [ ] I realise this code is not meant for production use and I shouldn't even think about it or encourage it.
+- [ ] My submission does one logical thing only (one bugfix, one new feature). 
+      If want to supply multiple logical changes, I will submit multiple pull requests.
+- [ ] I have read and understood CONTRIBUTING guide
 
 Commits:
 - [ ] My commits are logical, easily readable, with concise comments.
-- [ ] I regret doing this already.
 
 Licensing:
 - [ ] I am the author of submission or have been authorized by submission copyright holder to issue this pull request.
