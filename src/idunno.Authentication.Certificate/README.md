@@ -1,4 +1,6 @@
 ﻿# idunno.Authentication.Certificate
+ 
+ **THIS IS NOT READY YET.**
 
 *This handler is available for ASP.NET Core 2.0 only. Not due to technical reasons, I'm just lazy.*
 
