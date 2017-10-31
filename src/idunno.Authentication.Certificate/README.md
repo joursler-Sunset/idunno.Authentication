@@ -11,7 +11,7 @@ host for Certificate authentication, be it IIS, Kestrel, Azure Web Applications 
 
 ## How do I use this?
 
-First acquire an HTTPS certificate, apply it and then configure your host to demand and accept certificates..
+First acquire an HTTPS certificate, apply it and then configure your host to demand and accept certificates.
 
 In your web application add a reference to the package, then in the `ConfigureServices` method in `startup.cs` call
 `app.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).UseCertificateAuthentication(...);` with your options, 
@@ -112,13 +112,16 @@ public static IWebHost BuildWebHost(string[] args) =>
                {
                    listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                    {
-                       ServerCertificate = /* Your HTTPS Certificae */,
-                       ClientCertificateMode = ClientCertificateMode.RequireCertificate
+                       ServerCertificate = /* Your HTTPS Certificate */,
+                       ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+					   ClientCertificateValidation = CertificateValidator.DisableChannelValidation
                    });
                });
            })
            .Build();
 ```
+You must set the `ClientCertificateValidation` delegate to `CertificateValidator.DisableChannelValidation` in order to stop Kestrel using the default OS certificate validation routine and, 
+instead, letting the authentication handler perform the validation.
 
 ### IIS
 
@@ -133,4 +136,3 @@ In the IIS Manager
 ### Azure
 
 See the [Azure documentation](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-configure-tls-mutual-auth).
-

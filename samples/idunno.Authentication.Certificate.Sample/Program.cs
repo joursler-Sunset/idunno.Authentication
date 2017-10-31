@@ -27,7 +27,8 @@ namespace idunno.Authentication.Certificate.Sample
                         listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                         {
                             ServerCertificate = FindHttpsCertificate(),
-                            ClientCertificateMode = ClientCertificateMode.RequireCertificate
+                            ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                            ClientCertificateValidation = CertificateValidator.DisableChannelValidation
                         });
                     });
                     options.Listen(IPAddress.Loopback, 5000);
