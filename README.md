@@ -4,7 +4,7 @@ This repository contains a collection of various authentication mechanisms for A
 
 * [Basic Authentication](src/idunno.Authentication.Basic/)
 * [Certificate Authentication](src/idunno.Authentication.Certificate/)
- 
+
 Basic Authentication started as a demonstration of how to write authentication middleware and was not 
 as something you would seriously consider using, but some people want Basic Authentication and 
 Certificate Authentication is a common request on the ASP.NET Core Security repo, so I am releasing my own versions of them.
@@ -16,7 +16,6 @@ This is **not** an official Microsoft project, this is an "In my spare time, ent
 ## Are these available as nuget packages?
 
 nuget packages are available for the ASP.NET Core 2.0 versions of the authentication handlers.
-
 
 ## What about older versions of ASP.NET Core?
 
@@ -30,5 +29,5 @@ Certificate authentication is only available for ASP.NET Core 2.0.
 
 ## Notes
 
-Each handler requires you to authenticate the credentials passed. 
+Each handler requires you to authenticate the credentials passed.
 You are responsible for hardening this authentication and ensuring it performs under load.
