@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -16,6 +16,8 @@ namespace idunno.Authentication.Certificate
 {
     internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
     {
+        private static Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
+
         public CertificateAuthenticationHandler(
             IOptionsMonitor<CertificateAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -53,24 +55,79 @@ namespace idunno.Authentication.Certificate
             // This should never be the case, as cert auth happens long before ASP.NET kicks in.
             if (clientCertificate == null)
             {
+                Logger.LogDebug("No client certificate found.");
                 return AuthenticateResult.NoResult();
+            }
+
+            bool isOfferedCertificateSelfSigned =
+                clientCertificate.SubjectName.RawData.SequenceEqual(clientCertificate.IssuerName.RawData);
+
+            // If we have a self signed cert, and they're not allowed, exit early and not bother with
+            // any other validations.
+            if (isOfferedCertificateSelfSigned &&
+                !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
+            {
+                Logger.LogWarning("Self signed certificate rejected, subject was {0}", clientCertificate.Subject);
+
+                return AuthenticateResult.Fail("Options do not allow self signed certificates.");
+            }
+
+            // Now build the chain validation options.
+
+            Oid[] applicationPolicy = new Oid[0];
+            X509VerificationFlags verificationFlags = X509VerificationFlags.AllFlags;
+            X509RevocationFlag revocationFlag = Options.RevocationFlag;
+            X509RevocationMode revocationMode = Options.RevocationMode;
+
+            if (isOfferedCertificateSelfSigned)
+            {
+                // Turn off chain validation, because we have a self signed certificate.
+                revocationFlag = X509RevocationFlag.EndCertificateOnly;
+                revocationMode = X509RevocationMode.NoCheck;
+                verificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
+                                    X509VerificationFlags.IgnoreEndRevocationUnknown;
+            }
+
+            if (!Options.ValidateValidityPeriod)
+            {
+                verificationFlags = verificationFlags | X509VerificationFlags.IgnoreNotTimeValid;
+            }
+
+            X509ChainPolicy chainPolicy;
+
+            if (Options.ValidateCertificateUse)
+            {
+                chainPolicy = new X509ChainPolicy
+                {
+                    ApplicationPolicy = { ClientCertificateOid },
+                    RevocationFlag = revocationFlag,
+                    RevocationMode = revocationMode,
+                    VerificationFlags = verificationFlags,
+                };
+            }
+            else
+            {
+                chainPolicy = new X509ChainPolicy
+                {
+                    RevocationFlag = revocationFlag,
+                    RevocationMode = revocationMode,
+                    VerificationFlags = verificationFlags,
+                };
             }
 
             try
             {
-                if (Options.ValidateCertificateChain && !IsCertificateChainValid(clientCertificate))
+                var chain = new X509Chain
                 {
-                    return AuthenticateResult.Fail("Client certificate chain validation failure.");
-                }
+                    ChainPolicy = chainPolicy
+                };
 
-                if (Options.ValidateValidityPeriod && !IsCertificateWithinValidityRange(clientCertificate))
-                {
-                    return AuthenticateResult.Fail("Client certificate has expired or is not yet valid.");
-                }
+                var certificateIsValid = chain.Build(clientCertificate);
 
-                if (Options.ValidateCertificateUse && !IsCertificateValidForClientAuthentication(clientCertificate))
+                if (!certificateIsValid)
                 {
-                    return AuthenticateResult.Fail("Certificate presented is not valid for client use.");
+                    Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
+                    return AuthenticateResult.Fail("Client certificate failed validation.");
                 }
 
                 var validateCertificateContext = new ValidateCertificateContext(Context, Scheme, Options)
@@ -112,48 +169,6 @@ namespace idunno.Authentication.Certificate
             // user code, so the best thing to do is Forbid, not Challenge.
             Response.StatusCode = 403;
             return Task.CompletedTask;
-        }
-
-        private bool IsCertificateChainValid(X509Certificate2 clientCertificate)
-        {
-            return clientCertificate.Verify();
-        }
-
-        private bool IsCertificateValidForClientAuthentication(X509Certificate2 clientCertificate)
-        {
-            if (clientCertificate.Version >= 3)
-            {
-                List<X509EnhancedKeyUsageExtension> ekuExtensions = clientCertificate.Extensions.OfType<X509EnhancedKeyUsageExtension>().ToList();
-                if (!ekuExtensions.Any())
-                {
-                    return true;
-                }
-                else
-                {
-                    foreach (var extension in ekuExtensions)
-                    {
-                        foreach (var oid in extension.EnhancedKeyUsages)
-                        {
-                            if (oid.Value.Equals("1.3.6.1.5.5.7.3.2", StringComparison.Ordinal))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private bool IsCertificateWithinValidityRange(X509Certificate2 clientCertificate)
-        {
-            var now = DateTime.Now;
-            if (clientCertificate.NotBefore <= now && clientCertificate.NotAfter >= now)
-            {
-                return true;
-            }
-            return false;
         }
     }
 }

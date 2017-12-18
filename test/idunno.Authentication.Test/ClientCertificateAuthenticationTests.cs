@@ -90,7 +90,7 @@ namespace idunno.Authentication.Test
                 {
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
-                        options.ValidateCertificateChain = configureOptions.ValidateCertificateChain;
+                        options.AllowedCertificateTypes = CertificateTypes.SelfSigned | CertificateTypes.TrustedRootChained;
                         options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
                         options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
                         options.Events = configureOptions.Events;
