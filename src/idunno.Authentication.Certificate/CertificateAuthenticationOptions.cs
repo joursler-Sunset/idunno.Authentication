@@ -13,7 +13,7 @@ namespace idunno.Authentication.Certificate
         /// <summary>
         /// Value indicating the types of certificates accepted by the authentication middleware.
         /// </summary>
-        public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.TrustedRootChained;
+        public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.Chained;
 
         /// <summary>
         /// A list of additional certificates to be trusted as part of chain validation.

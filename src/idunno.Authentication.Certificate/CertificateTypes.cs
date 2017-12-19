@@ -8,7 +8,7 @@ namespace idunno.Authentication.Certificate
     [Flags]
     public enum CertificateTypes : short
     {
-        TrustedRootChained = 1,
+        Chained = 1,
         SelfSigned = 2,
         All = 3
     }

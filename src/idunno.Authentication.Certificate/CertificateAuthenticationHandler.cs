@@ -69,6 +69,16 @@ namespace idunno.Authentication.Certificate
                 return AuthenticateResult.Fail("Options do not allow self signed certificates.");
             }
 
+            // If we have a chained cert, and they're not allowed, exit early and not bother with
+            // any other validations.
+            if (!clientCertificate.IsSelfSigned() &&
+                !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
+            {
+                Logger.LogWarning("Chained certificate rejected, subject was {0}", clientCertificate.Subject);
+
+                return AuthenticateResult.Fail("Options do not allow chained certificates.");
+            }
+
             var chainPolicy = BuildChainPolicy(clientCertificate);
 
             try
@@ -82,7 +92,14 @@ namespace idunno.Authentication.Certificate
 
                 if (!certificateIsValid)
                 {
-                    Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
+                    using (Logger.BeginScope(clientCertificate.SHA256Thumprint()))
+                    {
+                        Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
+                        foreach (var validationFailure in chain.ChainStatus)
+                        {
+                            Logger.LogWarning("{0} {1}", validationFailure.Status, validationFailure.StatusInformation);
+                        }
+                    }
                     return AuthenticateResult.Fail("Client certificate failed validation.");
                 }
 
@@ -127,33 +144,29 @@ namespace idunno.Authentication.Certificate
             return Task.CompletedTask;
         }
 
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        {
+            Response.StatusCode = 403;
+            return Task.CompletedTask;
+        }
+
         private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
         {
             // Now build the chain validation options.
-            X509VerificationFlags verificationFlags = X509VerificationFlags.AllFlags;
             X509RevocationFlag revocationFlag = Options.RevocationFlag;
             X509RevocationMode revocationMode = Options.RevocationMode;
 
             if (certificate.IsSelfSigned())
             {
                 // Turn off chain validation, because we have a self signed certificate.
-                revocationFlag = X509RevocationFlag.EndCertificateOnly;
+                revocationFlag = X509RevocationFlag.EntireChain;
                 revocationMode = X509RevocationMode.NoCheck;
-                verificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
-                                    X509VerificationFlags.IgnoreEndRevocationUnknown;
-            }
-
-            if (!Options.ValidateValidityPeriod)
-            {
-                verificationFlags = verificationFlags | X509VerificationFlags.IgnoreNotTimeValid;
             }
 
             X509ChainPolicy chainPolicy = new X509ChainPolicy
             {
-                ApplicationPolicy = { ClientCertificateOid },
                 RevocationFlag = revocationFlag,
                 RevocationMode = revocationMode,
-                VerificationFlags = verificationFlags,
             };
 
             if (Options.ValidateCertificateUse)
@@ -164,6 +177,18 @@ namespace idunno.Authentication.Certificate
             if (Options.AdditionalTrustedCertificates.Count > 0)
             {
                 chainPolicy.ExtraStore.AddRange(Options.AdditionalTrustedCertificates.ToArray());
+            }
+
+            if (certificate.IsSelfSigned())
+            {
+                chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
+                chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;
+                chainPolicy.ExtraStore.Add(certificate);
+            }
+
+            if (!Options.ValidateValidityPeriod)
+            {
+                chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreNotTimeValid;
             }
 
             return chainPolicy;
