@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Barry Dorrans. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Authentication;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+
+using Microsoft.AspNetCore.Authentication;
 
 namespace idunno.Authentication.Certificate
 {
@@ -12,6 +14,11 @@ namespace idunno.Authentication.Certificate
         /// Value indicating the types of certificates accepted by the authentication middleware.
         /// </summary>
         public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.TrustedRootChained;
+
+        /// <summary>
+        /// A list of additional certificates to be trusted as part of chain validation.
+        /// </summary>
+        public ICollection<X509Certificate2> AdditionalTrustedCertificates { get; set; } = new List<X509Certificate2>();
 
         /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client

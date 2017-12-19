@@ -59,12 +59,9 @@ namespace idunno.Authentication.Certificate
                 return AuthenticateResult.NoResult();
             }
 
-            bool isOfferedCertificateSelfSigned =
-                clientCertificate.SubjectName.RawData.SequenceEqual(clientCertificate.IssuerName.RawData);
-
             // If we have a self signed cert, and they're not allowed, exit early and not bother with
             // any other validations.
-            if (isOfferedCertificateSelfSigned &&
+            if (clientCertificate.IsSelfSigned() &&
                 !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
             {
                 Logger.LogWarning("Self signed certificate rejected, subject was {0}", clientCertificate.Subject);
@@ -72,48 +69,7 @@ namespace idunno.Authentication.Certificate
                 return AuthenticateResult.Fail("Options do not allow self signed certificates.");
             }
 
-            // Now build the chain validation options.
-
-            Oid[] applicationPolicy = new Oid[0];
-            X509VerificationFlags verificationFlags = X509VerificationFlags.AllFlags;
-            X509RevocationFlag revocationFlag = Options.RevocationFlag;
-            X509RevocationMode revocationMode = Options.RevocationMode;
-
-            if (isOfferedCertificateSelfSigned)
-            {
-                // Turn off chain validation, because we have a self signed certificate.
-                revocationFlag = X509RevocationFlag.EndCertificateOnly;
-                revocationMode = X509RevocationMode.NoCheck;
-                verificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
-                                    X509VerificationFlags.IgnoreEndRevocationUnknown;
-            }
-
-            if (!Options.ValidateValidityPeriod)
-            {
-                verificationFlags = verificationFlags | X509VerificationFlags.IgnoreNotTimeValid;
-            }
-
-            X509ChainPolicy chainPolicy;
-
-            if (Options.ValidateCertificateUse)
-            {
-                chainPolicy = new X509ChainPolicy
-                {
-                    ApplicationPolicy = { ClientCertificateOid },
-                    RevocationFlag = revocationFlag,
-                    RevocationMode = revocationMode,
-                    VerificationFlags = verificationFlags,
-                };
-            }
-            else
-            {
-                chainPolicy = new X509ChainPolicy
-                {
-                    RevocationFlag = revocationFlag,
-                    RevocationMode = revocationMode,
-                    VerificationFlags = verificationFlags,
-                };
-            }
+            var chainPolicy = BuildChainPolicy(clientCertificate);
 
             try
             {
@@ -169,6 +125,48 @@ namespace idunno.Authentication.Certificate
             // user code, so the best thing to do is Forbid, not Challenge.
             Response.StatusCode = 403;
             return Task.CompletedTask;
+        }
+
+        private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
+        {
+            // Now build the chain validation options.
+            X509VerificationFlags verificationFlags = X509VerificationFlags.AllFlags;
+            X509RevocationFlag revocationFlag = Options.RevocationFlag;
+            X509RevocationMode revocationMode = Options.RevocationMode;
+
+            if (certificate.IsSelfSigned())
+            {
+                // Turn off chain validation, because we have a self signed certificate.
+                revocationFlag = X509RevocationFlag.EndCertificateOnly;
+                revocationMode = X509RevocationMode.NoCheck;
+                verificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
+                                    X509VerificationFlags.IgnoreEndRevocationUnknown;
+            }
+
+            if (!Options.ValidateValidityPeriod)
+            {
+                verificationFlags = verificationFlags | X509VerificationFlags.IgnoreNotTimeValid;
+            }
+
+            X509ChainPolicy chainPolicy = new X509ChainPolicy
+            {
+                ApplicationPolicy = { ClientCertificateOid },
+                RevocationFlag = revocationFlag,
+                RevocationMode = revocationMode,
+                VerificationFlags = verificationFlags,
+            };
+
+            if (Options.ValidateCertificateUse)
+            {
+                chainPolicy.ApplicationPolicy.Add(ClientCertificateOid);
+            }
+
+            if (Options.AdditionalTrustedCertificates.Count > 0)
+            {
+                chainPolicy.ExtraStore.AddRange(Options.AdditionalTrustedCertificates.ToArray());
+            }
+
+            return chainPolicy;
         }
     }
 }
