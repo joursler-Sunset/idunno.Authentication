@@ -1,7 +1,7 @@
 # Self signed, valid, client EKU Certificate
 $filePath = 'validSelfSignedClientEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
-    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -Subject 'CN=Valid Self Signed Client EKU,OU=dev,DC=idunno-dev,DC=org' `
     -KeyAlgorithm RSA `
     -KeyLength 2048 `
     -NotBefore (Get-Date) `
@@ -18,7 +18,7 @@ Remove-Item $certificatePath
 # Self signed, valid, server EKU Certificate
 $filePath = 'validSelfSignedServerEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
-    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -Subject 'CN=Valid Self Signed Server EKU,OU=dev,DC=idunno-dev,DC=org' `
     -KeyAlgorithm RSA `
     -KeyLength 2048 `
     -NotBefore (Get-Date) `
@@ -35,7 +35,7 @@ Remove-Item $certificatePath
 # Self signed, valid, No EKU Certificate
 $filePath = 'validSelfSignedNoEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
-    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -Subject 'CN=Valid Self Signed No EKU,OU=dev,DC=idunno-dev,DC=org' `
     -KeyAlgorithm RSA `
     -KeyLength 2048 `
     -NotBefore (Get-Date) `
@@ -51,7 +51,7 @@ Remove-Item $certificatePath
 # Self signed, valid, No EKU Certificate, expired
 $filePath = 'selfSignedNoEkuCertificateExpired.cer'
 $certificate = New-SelfSignedCertificate `
-    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -Subject 'CN=Expired Self Signed,OU=dev,DC=idunno-dev,DC=org' `
     -KeyAlgorithm RSA `
     -KeyLength 2048 `
     -NotBefore (Get-Date).AddYears(-1) `
@@ -68,7 +68,7 @@ Remove-Item $certificatePath
 # Self signed, valid, No EKU Certificate, not valid yet
 $filePath = 'selfSignedNoEkuCertificateNotValidYet.cer'
 $certificate = New-SelfSignedCertificate `
-    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -Subject 'CN=Not Valid Yet Self Signed,OU=dev,DC=idunno-dev,DC=org' `
     -KeyAlgorithm RSA `
     -KeyLength 2048 `
     -NotBefore (Get-Date).AddYears(2) `

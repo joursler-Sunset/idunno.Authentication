@@ -42,6 +42,28 @@ namespace idunno.Authentication.Test
         };
 
         [Fact]
+        public void CheckThatTestRootCAIsLoaded()
+        {
+            bool found;
+
+            using (var rootCAStore = new X509Store(StoreName.Root))
+            {
+                rootCAStore.Open(OpenFlags.ReadOnly);
+
+                var certificates = rootCAStore.Certificates.Find(
+                    X509FindType.FindBySerialNumber,
+                    "5d452c99003e54954f85aca776fd5b2c",
+                    true);
+
+                found = certificates.Count != 0;
+
+                rootCAStore.Close();
+            }
+
+            Assert.True(found);
+        }
+
+        [Fact]
         public async Task VerifySchemeDefaults()
         {
             var services = new ServiceCollection();
@@ -230,6 +252,78 @@ namespace idunno.Authentication.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task VerifyRootedCertWithNoEkuPassesByDefault()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.RootedNoEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyRootedCertWithClientEkuPassesByDefault()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.RootedClientEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyRootedCertWithServerEkuFailsByDefault()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.RootedServerEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyRootedCertWithServerEkuPassesIfEkuValidationIsTurnedOff()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    ValidateCertificateUse = false,
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.RootedServerEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyRevokedCertFailsByDefault()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.RootedRevoked);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+
         private static TestServer CreateServer(
             CertificateAuthenticationOptions configureOptions,
             X509Certificate2 clientCertificate,
@@ -338,6 +432,18 @@ namespace idunno.Authentication.Test
 
             public static X509Certificate2 SelfSignedExpired { get; private set; } =
                 new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
+
+            public static X509Certificate2 RootedNoEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("rootedNoEku.cer"));
+
+            public static X509Certificate2 RootedClientEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("rootedClientEku.cer"));
+
+            public static X509Certificate2 RootedServerEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("rootedServerEku.cer"));
+
+            public static X509Certificate2 RootedRevoked { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("rootedRevoked.cer"));
 
             private static string GetFullyQualifiedFilePath(string filename)
             {

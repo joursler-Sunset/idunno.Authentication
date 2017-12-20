@@ -25,6 +25,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestCertificates\rootCA.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\rootedClientEku.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\rootedNoEku.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\rootedRevoked.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\rootedServerEku.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestCertificates\selfSignedNoEkuCertificateExpired.cer">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
