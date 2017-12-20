@@ -19,13 +19,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 using idunno.Authentication.Certificate;
+using System.IO;
 
 namespace idunno.Authentication.Test
 {
     public class ClientCertificateAuthenticationTests
     {
-        private const string CollateralPath = @"..\..\..\..\collateral\";
-
         private CertificateAuthenticationEvents sucessfulValidationEvents = new CertificateAuthenticationEvents()
         {
             OnValidateCertificate = context =>
@@ -58,27 +57,19 @@ namespace idunno.Authentication.Test
         [Fact]
         public void ValidateIsSelfSignedExtensionMethod()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedClientEkuCertificate.pfx",
-                "P@ssw0rd!");
-
-            Assert.True(clientCertificate.IsSelfSigned());
+            Assert.True(Certificates.SelfSignedValidWithNoEku.IsSelfSigned());
         }
 
         [Fact]
         public async Task VerifyValidSelfSignedWithClientEkuAuthenticates()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedClientEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithClientEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -87,17 +78,13 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithNoEkuAuthenticates()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedNoEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithNoEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -106,17 +93,12 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithClientEkuFailsWhenSelfSignedCertsNotAllowed()
         {
-            var currentPath = System.IO.Directory.GetCurrentDirectory();
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedClientEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithClientEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -125,17 +107,13 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithNoEkuFailsWhenSelfSignedCertsNotAllowed()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedNoEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithNoEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -144,17 +122,13 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerFailsEvenIfSelfSignedCertsAreAllowed()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedServerEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -163,10 +137,6 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerPassesWhenSelfSignedCertsAreAllowedAndPurposeValidationIsOff()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedServerEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
@@ -174,7 +144,7 @@ namespace idunno.Authentication.Test
                     ValidateCertificateUse = false,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -183,10 +153,6 @@ namespace idunno.Authentication.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerFailsPurposeValidationIsOffButSelfSignedCertsAreNotAllowed()
         {
-            var clientCertificate = new X509Certificate2(
-                CollateralPath + "validSelfSignedServerEkuCertificate.pfx",
-                "P@ssw0rd!");
-
             var server = CreateServer(
                 new CertificateAuthenticationOptions
                 {
@@ -194,10 +160,74 @@ namespace idunno.Authentication.Test
                     ValidateCertificateUse = false,
                     Events = sucessfulValidationEvents
                 },
-                clientCertificate);
+                Certificates.SelfSignedValidWithServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyExpiredSelfSignedFails()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    ValidateCertificateUse = false,
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.SelfSignedExpired);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyExpiredSelfSignedPassesIfDateRangeValidationIsDisabled()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    ValidateValidityPeriod = false,
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.SelfSignedExpired);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyNotYetValidSelfSignedFails()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    ValidateCertificateUse = false,
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.SelfSignedNotYetValid);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyNotYetValidSelfSignedPassesIfDateRangeValidationIsDisabled()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    ValidateValidityPeriod = false,
+                    Events = sucessfulValidationEvents
+                },
+                Certificates.SelfSignedNotYetValid);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         private static TestServer CreateServer(
@@ -240,7 +270,6 @@ namespace idunno.Authentication.Test
                 {
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
-                        options.AdditionalTrustedCertificates = configureOptions.AdditionalTrustedCertificates;
                         options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
                         options.Events = configureOptions.Events;
                         options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
@@ -288,6 +317,37 @@ namespace idunno.Authentication.Test
             public HttpResponseMessage Response { get; set; }
             public string ResponseText { get; set; }
             public XElement ResponseElement { get; set; }
+        }
+
+        private static class Certificates
+        {
+            private static string collateralPath =
+                Path.Combine(Directory.GetCurrentDirectory(), "TestCertificates");
+
+            public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
+
+            public static X509Certificate2 SelfSignedValidWithNoEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedNoEkuCertificate.cer"));
+
+            public static X509Certificate2 SelfSignedValidWithServerEku { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedServerEkuCertificate.cer"));
+
+            public static X509Certificate2 SelfSignedNotYetValid { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateNotValidYet.cer"));
+
+            public static X509Certificate2 SelfSignedExpired { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
+
+            private static string GetFullyQualifiedFilePath(string filename)
+            {
+                var filePath = Path.Combine(collateralPath, filename);
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException(filePath);
+                }
+                return filePath;
+            }
         }
     }
 }

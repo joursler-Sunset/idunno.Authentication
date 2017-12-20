@@ -1,7 +1,5 @@
-$pfxPassword = ConvertTo-SecureString 'P@ssw0rd!' -Force -AsPlainText
-
 # Self signed, valid, client EKU Certificate
-$pfxFilePath = 'validSelfSignedClientEkuCertificate.pfx'
+$filePath = 'validSelfSignedClientEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
     -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
     -KeyAlgorithm RSA `
@@ -14,11 +12,11 @@ $certificate = New-SelfSignedCertificate `
     -KeyUsage DigitalSignature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2")
 $certificatePath = 'Cert:\CurrentUser\My\' + ($certificate.ThumbPrint)
-Export-PfxCertificate -Cert $certificatePath -FilePath $pfxFilePath -Password $pfxPassword
+Export-Certificate -Cert $certificatePath -FilePath $filePath
 Remove-Item $certificatePath
 
 # Self signed, valid, server EKU Certificate
-$pfxFilePath = 'validSelfSignedServerEkuCertificate.pfx'
+$filePath = 'validSelfSignedServerEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
     -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
     -KeyAlgorithm RSA `
@@ -31,11 +29,11 @@ $certificate = New-SelfSignedCertificate `
     -KeyUsage DigitalSignature `
     -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")
 $certificatePath = 'Cert:\CurrentUser\My\' + ($certificate.ThumbPrint)
-Export-PfxCertificate -Cert $certificatePath -FilePath $pfxFilePath -Password $pfxPassword
+Export-Certificate -Cert $certificatePath -FilePath $filePath
 Remove-Item $certificatePath
 
 # Self signed, valid, No EKU Certificate
-$pfxFilePath = 'validSelfSignedNoEkuCertificate.pfx'
+$filePath = 'validSelfSignedNoEkuCertificate.cer'
 $certificate = New-SelfSignedCertificate `
     -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
     -KeyAlgorithm RSA `
@@ -47,6 +45,39 @@ $certificate = New-SelfSignedCertificate `
     -HashAlgorithm SHA256 `
     -KeyUsage DigitalSignature
 $certificatePath = 'Cert:\CurrentUser\My\' + ($certificate.ThumbPrint)
-Export-PfxCertificate -Cert $certificatePath -FilePath $pfxFilePath -Password $pfxPassword
+Export-Certificate -Cert $certificatePath -FilePath $filePath
+Remove-Item $certificatePath
+
+# Self signed, valid, No EKU Certificate, expired
+$filePath = 'selfSignedNoEkuCertificateExpired.cer'
+$certificate = New-SelfSignedCertificate `
+    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -KeyAlgorithm RSA `
+    -KeyLength 2048 `
+    -NotBefore (Get-Date).AddYears(-1) `
+    -NotAfter (Get-Date).AddDays(-1) `
+    -CertStoreLocation "cert:CurrentUser\My" `
+    -FriendlyName "Self Signed No EKU Restrictions Expired" `
+    -HashAlgorithm SHA256 `
+    -KeyUsage DigitalSignature
+$certificatePath = 'Cert:\CurrentUser\My\' + ($certificate.ThumbPrint)
+Export-Certificate -Cert $certificatePath -FilePath $filePath
+Remove-Item $certificatePath
+
+
+# Self signed, valid, No EKU Certificate, not valid yet
+$filePath = 'selfSignedNoEkuCertificateNotValidYet.cer'
+$certificate = New-SelfSignedCertificate `
+    -Subject 'CN=Barry Dorrans,OU=SelfSignedValid,DC=idunno,DC=org' `
+    -KeyAlgorithm RSA `
+    -KeyLength 2048 `
+    -NotBefore (Get-Date).AddYears(2) `
+    -NotAfter (Get-Date).AddYears(3) `
+    -CertStoreLocation "cert:CurrentUser\My" `
+    -FriendlyName "Self Signed No EKU Restrictions, not valid yet" `
+    -HashAlgorithm SHA256 `
+    -KeyUsage DigitalSignature
+$certificatePath = 'Cert:\CurrentUser\My\' + ($certificate.ThumbPrint)
+Export-Certificate -Cert $certificatePath -FilePath $filePath
 Remove-Item $certificatePath
 

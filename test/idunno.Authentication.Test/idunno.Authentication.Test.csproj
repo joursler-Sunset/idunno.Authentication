@@ -24,4 +24,22 @@
     <ProjectReference Include="..\..\src\idunno.Authentication.Certificate\idunno.Authentication.Certificate.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestCertificates\selfSignedNoEkuCertificateExpired.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\selfSignedNoEkuCertificateNotValidYet.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\validSelfSignedClientEkuCertificate.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\validSelfSignedNoEkuCertificate.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestCertificates\validSelfSignedServerEkuCertificate.cer">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
