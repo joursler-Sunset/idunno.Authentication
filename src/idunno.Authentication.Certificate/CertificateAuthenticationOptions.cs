@@ -16,11 +16,6 @@ namespace idunno.Authentication.Certificate
         public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.Chained;
 
         /// <summary>
-        /// A list of additional certificates to be trusted as part of chain validation.
-        /// </summary>
-        public ICollection<X509Certificate2> AdditionalTrustedCertificates { get; set; } = new List<X509Certificate2>();
-
-        /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client
         /// authentication, either via the Client Authentication EKU, or having no EKUs
         /// at all. If the certificate chains to a root CA all certificates in the chain must be validate

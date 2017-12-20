@@ -174,11 +174,6 @@ namespace idunno.Authentication.Certificate
                 chainPolicy.ApplicationPolicy.Add(ClientCertificateOid);
             }
 
-            if (Options.AdditionalTrustedCertificates.Count > 0)
-            {
-                chainPolicy.ExtraStore.AddRange(Options.AdditionalTrustedCertificates.ToArray());
-            }
-
             if (certificate.IsSelfSigned())
             {
                 chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
