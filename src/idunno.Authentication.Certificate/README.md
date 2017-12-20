@@ -90,6 +90,20 @@ This check validates that the certificate is within its validity period. As the 
 request this ensures that a certificate that was valid when it was presented has not expired during
 its current session.
 
+### RevocationFlag
+
+A flag which specifies which certificates in the chain are checked for revocation.
+
+Revocation checks are only performed when the certificate is chained to a root certificate.
+
+### RevocationMode 
+
+A flag which specifies how revocation checks are performed.
+Specifying an online check can result in a long delay while the certificate authority is contacted.
+
+Revocation checks are only performed when the certificate is chained to a root certificate.
+
+
 ### How do I configure my app to require a certificate only on certain paths?
 
 Not possible, remember the certificate exchange is done that the start of the HTTPS conversation, 
@@ -114,7 +128,7 @@ public static IWebHost BuildWebHost(string[] args) =>
                    {
                        ServerCertificate = /* Your HTTPS Certificate */,
                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-					   ClientCertificateValidation = CertificateValidator.DisableChannelValidation
+                       ClientCertificateValidation = CertificateValidator.DisableChannelValidation
                    });
                });
            })
