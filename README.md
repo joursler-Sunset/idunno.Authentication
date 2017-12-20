@@ -1,5 +1,7 @@
 ﻿# idunno.Authentication
 
+[![Build status](https://ci.appveyor.com/api/projects/status/afcip59il6a7axo0?svg=true)](https://ci.appveyor.com/project/blowdart/idunno-authentication)
+
 This repository contains a collection of various authentication mechanisms for ASP.NET Core, including
 
 * [Basic Authentication](src/idunno.Authentication.Basic/)
@@ -9,7 +11,7 @@ Basic Authentication started as a demonstration of how to write authentication m
 as something you would seriously consider using, but some people want Basic Authentication and
 Certificate Authentication is a common request on the ASP.NET Core Security repo, so I am releasing my own versions of them.
 
-All work is targetted at ASP.NET Core 2.0.
+All work is now targetted at ASP.NET Core 2.0.
 
 This is **not** an official Microsoft project, this is an "In my spare time, entirely unsupported"™ effort.
 
@@ -20,7 +22,8 @@ nuget packages are available for the ASP.NET Core 2.0 versions of the authentica
 ## What about older versions of ASP.NET Core?
 
 Older versions of Basic Authentication are available in the appropriate branch.
-Certificate authentication is only available for ASP.NET Core 2.0.
+
+Certificate Authentication is only available for ASP.NET Core 2.0. It will not be back-ported.
 
 | ASP.NET Core MVC Version | Branch                                                           |
 |--------------------------|------------------------------------------------------------------|
