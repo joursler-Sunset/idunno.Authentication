@@ -1,7 +1,7 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
 
-  <PropertyGroup Condition="'$(CompileConfig)' == 'RELEASE'">
+  <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

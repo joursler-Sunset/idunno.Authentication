@@ -1,17 +1,16 @@
 ﻿# idunno.Authentication.Certificate
  
- **THIS IS NOT READY YET.**
-
 *This handler is available for ASP.NET Core 2.0 only. Not due to technical reasons, I'm just lazy.*
 
 This project sort of contains an implementation of [Certificate Authentication](https://tools.ietf.org/html/rfc5246#section-7.4.4) for ASP.NET Core. 
 Certificate authentication happens at the TLS level, long before it ever gets to ASP.NET Core, so, more accurately this is an authentication handler
-that validates the certificate and then gives you an event where you can resolve that certificate to a ClaimsPrincipal. You must configure your
-host for Certificate authentication, be it IIS, Kestrel, Azure Web Applications or whatever else you're using.
+that validates the certificate and then gives you an event where you can resolve that certificate to a ClaimsPrincipal. 
+
+You **must** [configure your host](#hostConfiguration) for certificate authentication, be it IIS, Kestrel, Azure Web Applications or whatever else you're using.
 
 ## How do I use this?
 
-First acquire an HTTPS certificate, apply it and then configure your host to demand and accept certificates.
+First acquire an HTTPS certificate, apply it and then [configure your host](#hostConfiguration) to require certificates.
 
 In your web application add a reference to the package, then in the `ConfigureServices` method in `startup.cs` call
 `app.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).UseCertificateAuthentication(...);` with your options, 
@@ -110,7 +109,7 @@ Not possible, remember the certificate exchange is done that the start of the HT
 it's done by the host, not the app. Kestrel, IIS, Azure Web Apps don't have any configuration for
 this sort of thing.
 
-## How do I configure my host to require a certificate?
+## <a name="hostConfiguration"></a>How do I configure my host to require a certificate?
 
 ### Kestrel
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET 5 middleware that enables an application to support certificate authentication.</Description>
+    <Description>ASP.NET Core middleware that enables an application to support certificate authentication.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
