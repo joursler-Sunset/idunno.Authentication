@@ -11,4 +11,4 @@ before_build:
   - ps: .\installTestRootCA.ps1
 
 artifacts:
-  - path: '**\*.nupkg'
+  - path: 'src\**\*.nupkg'
