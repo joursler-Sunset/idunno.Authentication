@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="version.xml" />
-
   <PropertyGroup>
     <Product>idunno.org Authentication</Product>
     <RepositoryUrl>https://github.com/blowdart/idunno.Authentication</RepositoryUrl>
