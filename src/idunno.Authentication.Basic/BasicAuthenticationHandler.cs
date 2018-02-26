@@ -98,7 +98,8 @@ namespace idunno.Authentication.Basic
 
                 await Events.ValidateCredentials(validateCredentialsContext);
 
-                if (validateCredentialsContext.Result != null)
+                if (validateCredentialsContext.Result != null &&
+                    validateCredentialsContext.Result.Succeeded)
                 {
                     var ticket = new AuthenticationTicket(validateCredentialsContext.Principal, Scheme.Name);
                     return AuthenticateResult.Success(ticket);

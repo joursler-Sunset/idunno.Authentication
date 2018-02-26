@@ -127,7 +127,8 @@ namespace idunno.Authentication.Certificate
 
                 await Events.ValidateCertificate(validateCertificateContext);
 
-                if (validateCertificateContext.Result != null)
+                if (validateCertificateContext.Result != null &&
+                    validateCertificateContext.Result.Succeeded)
                 {
                     var ticket = new AuthenticationTicket(validateCertificateContext.Principal, Scheme.Name);
                     return AuthenticateResult.Success(ticket);

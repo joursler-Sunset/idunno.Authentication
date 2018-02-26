@@ -31,12 +31,29 @@ namespace idunno.Authentication.Test
             {
                 var claims = new[]
                 {
-                                new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                                new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
-                            };
+                    new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                    new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                };
 
                 context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
                 context.Success();
+                return Task.CompletedTask;
+            }
+        };
+
+        private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
+        {
+            OnValidateCertificate = context =>
+            {
+                context.Fail("Not validated");
+                return Task.CompletedTask;
+            }
+        };
+
+        private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
+        {
+            OnValidateCertificate = context =>
+            {
                 return Task.CompletedTask;
             }
         };
@@ -318,6 +335,36 @@ namespace idunno.Authentication.Test
                     Events = sucessfulValidationEvents
                 },
                 Certificates.RootedRevoked);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyFailingInTheValidationEventReturnsForbidden()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    ValidateCertificateUse = false,
+                    Events = failedValidationEvents
+                },
+                Certificates.RootedServerEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task DoingNothingInTheValidationEventReturnsForbidden()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    ValidateCertificateUse = false,
+                    Events = unprocessedValidationEvents
+                },
+                Certificates.RootedServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

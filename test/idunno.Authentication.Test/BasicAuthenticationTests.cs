@@ -267,7 +267,44 @@ namespace idunno.Authentication.Test
             Assert.Equal(exceptionMessage, actualExceptionMessage);
         }
 
-    private static TestServer CreateServer(
+        [Fact]
+        public async Task ValidateAuthenticationFailsIfOnValidateCredentialsDoesNothing()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            var transaction = await SendAsync(server, "https://example.com/challenge", "username", "password");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAuthenticationFailsIfOnValidateCredentialsFails()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        context.Fail("Failed");
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            var transaction = await SendAsync(server, "https://example.com/challenge", "username", "password");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        }
+
+        private static TestServer CreateServer(
             BasicAuthenticationOptions configureOptions,
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null)
