@@ -323,10 +323,53 @@ namespace idunno.Authentication.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        [Fact]
+        public async Task VerifyNotSendingACertificateEndsUpInForbidden()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                });
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyArrHeaderIsUsedIfCertIsNotPresent()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                });
+
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
+            var response = await client.GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyArrHeaderEncodedCertFailsOnBadEncoding()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                });
+
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Add("X-ARR-ClientCert", "OOPS" + Convert.ToBase64String(Certificates.RootedNoEku.RawData));
+            var response = await client.GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
 
         private static TestServer CreateServer(
             CertificateAuthenticationOptions configureOptions,
-            X509Certificate2 clientCertificate,
+            X509Certificate2 clientCertificate = null,
             Func<HttpContext, bool> handler = null,
             Uri baseAddress = null)
         {
@@ -335,7 +378,10 @@ namespace idunno.Authentication.Test
                 {
                     app.Use((context, next) =>
                     {
-                        context.Connection.ClientCertificate = clientCertificate;
+                        if (clientCertificate != null)
+                        {
+                            context.Connection.ClientCertificate = clientCertificate;
+                        }
                         return next();
                     });
 

@@ -51,7 +51,25 @@ namespace idunno.Authentication.Certificate
 
             var clientCertificate = await Context.Connection.GetClientCertificateAsync();
 
-            // This should never be the case, as cert auth happens long before ASP.NET kicks in.
+            if (clientCertificate == null)
+            {
+                // Check for Azure header
+                string azureHeader = Context.Request.Headers["X-ARR-ClientCert"];
+                if (!string.IsNullOrEmpty(azureHeader))
+                {
+                    try
+                    {
+                        byte[] convertedHeader = Convert.FromBase64String(azureHeader);
+                        clientCertificate = new X509Certificate2(convertedHeader);
+                    }
+                    catch
+                    {
+                        Logger.LogError("Found X-ARR-ClientCert but could not convert it.");
+                    }
+                }
+            }
+
+            // This should never be the case, as cert authentication happens long before ASP.NET kicks in.
             if (clientCertificate == null)
             {
                 Logger.LogDebug("No client certificate found.");
