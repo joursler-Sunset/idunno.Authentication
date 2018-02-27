@@ -149,3 +149,33 @@ In the IIS Manager
 ### Azure
 
 See the [Azure documentation](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-configure-tls-mutual-auth).
+Once you have configured Azure app services to forward the header you need to add some extra configuration to allow ASP.NET Core
+to read the Azure forwarded certificate. In your application startup method, `Configure(IApplicationBuilder app)` add the 
+following line before the call to `app.UseAuthentication();`
+
+```c#
+app.UseCertificateHeaderForwarding();
+```
+
+### Random custom web proxies
+
+If you're using a proxy which isn't IIS or Azure's Web Apps Application Request Routing you will need to configure your proxy
+to forward the certificate it received in an HTTP header. The certificate must be base64 encoded. 
+Then in your application startup method, `Configure(IApplicationBuilder app)`, add the 
+following line before the call to `app.UseAuthentication();`
+
+```c#
+app.UseCertificateHeaderForwarding();
+```
+
+You will also need to configure the Certificate Forwarding handler to specify the header name.
+In your service configuration method, `ConfigureServices(IServiceCollection services)` add 
+the following code to configure the header the forwarding handler will build a certificate from;
+
+```c#
+services.AddCertificateHeaderForwarding(options =>
+{
+    options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME;
+});
+```
+

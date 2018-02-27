@@ -390,7 +390,8 @@ namespace idunno.Authentication.Test
                 new CertificateAuthenticationOptions
                 {
                     Events = sucessfulValidationEvents
-                });
+                },
+                wireUpHeaderMiddleware : true);
 
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
@@ -405,7 +406,8 @@ namespace idunno.Authentication.Test
                 new CertificateAuthenticationOptions
                 {
                     Events = sucessfulValidationEvents
-                });
+                },
+                wireUpHeaderMiddleware: true);
 
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-ARR-ClientCert", "OOPS" + Convert.ToBase64String(Certificates.RootedNoEku.RawData));
@@ -413,12 +415,47 @@ namespace idunno.Authentication.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        [Fact]
+        public async Task VerifySettingTheHeaderOnTheForwarderOptionsWorks()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                wireUpHeaderMiddleware: true,
+                headerName: "random-Weird-header");
+
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
+            var response = await client.GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyACustomHeaderFailsIfTheHeaderIsNotPresent()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                },
+                wireUpHeaderMiddleware: true,
+                headerName: "another-random-Weird-header");
+
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
+            var response = await client.GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
 
         private static TestServer CreateServer(
             CertificateAuthenticationOptions configureOptions,
             X509Certificate2 clientCertificate = null,
             Func<HttpContext, bool> handler = null,
-            Uri baseAddress = null)
+            Uri baseAddress = null,
+            bool wireUpHeaderMiddleware = false,
+            string headerName = "")
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -431,6 +468,12 @@ namespace idunno.Authentication.Test
                         }
                         return next();
                     });
+
+
+                    if (wireUpHeaderMiddleware)
+                    {
+                        app.UseCertificateHeaderForwarding();
+                    }
 
                     app.UseAuthentication();
 
@@ -468,6 +511,14 @@ namespace idunno.Authentication.Test
                 else
                 {
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                }
+
+                if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
+                {
+                    services.AddCertificateHeaderForwarding(options =>
+                    {
+                        options.CertificateHeader = headerName;
+                    });
                 }
             });
 

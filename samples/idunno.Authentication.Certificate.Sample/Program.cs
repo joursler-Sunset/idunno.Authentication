@@ -8,8 +8,6 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
-using idunno.Authentication.Certificate;
-
 namespace idunno.Authentication.Certificate.Sample
 {
     public class Program
