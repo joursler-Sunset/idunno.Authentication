@@ -53,8 +53,7 @@ namespace idunno.Authentication.Certificate
                     {
                         try
                         {
-                            byte[] convertedHeader = Convert.FromBase64String(certificateHeader);
-                            httpContext.Connection.ClientCertificate = new X509Certificate2(convertedHeader);
+                            httpContext.Connection.ClientCertificate = _options.HeaderConverter(certificateHeader);
                         }
                         catch
                         {
