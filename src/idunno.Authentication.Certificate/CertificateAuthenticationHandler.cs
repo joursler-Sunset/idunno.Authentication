@@ -116,6 +116,12 @@ namespace idunno.Authentication.Certificate
                     return AuthenticateResult.Success(ticket);
                 }
 
+                if (validateCertificateContext.Result != null &&
+                    validateCertificateContext.Result.Failure != null)
+                {
+                    return AuthenticateResult.Fail(validateCertificateContext.Result.Failure);
+                }
+
                 return AuthenticateResult.NoResult();
             }
             catch (Exception ex)
