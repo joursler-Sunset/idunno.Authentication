@@ -105,6 +105,12 @@ namespace idunno.Authentication.Basic
                     return AuthenticateResult.Success(ticket);
                 }
 
+                if (validateCredentialsContext.Result != null &&
+                    validateCredentialsContext.Result.Failure != null)
+                {
+                    return AuthenticateResult.Fail(validateCredentialsContext.Result.Failure);
+                }
+
                 return AuthenticateResult.NoResult();
             }
             catch (Exception ex)
@@ -120,6 +126,7 @@ namespace idunno.Authentication.Basic
                 {
                     return authenticationFailedContext.Result;
                 }
+
                 throw;
             }
         }
