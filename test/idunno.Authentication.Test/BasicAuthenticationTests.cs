@@ -54,8 +54,8 @@ namespace idunno.Authentication.Test
         public void SettingANonAsciiRealmThrows()
         {
             var options = new BasicAuthenticationOptions();
-            Exception ex = Assert.Throws<ArgumentOutOfRangeException>(() => options.Realm = "💩");
-            Assert.Equal("Realm must be US ASCII\r\nParameter name: Realm", ex.Message);
+            Exception ex = Assert.Throws<ArgumentException>(() => options.Realm = "💩");
+            Assert.Equal("Realm must be US ASCII", ex.Message);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace idunno.Authentication.Test
             var server = CreateServer(new BasicAuthenticationOptions());
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
+            Assert.Single(response.Headers.WwwAuthenticate);
             Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
             Assert.Equal("realm=\"\"", response.Headers.WwwAuthenticate.First().Parameter);
         }
@@ -120,7 +120,7 @@ namespace idunno.Authentication.Test
             });
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
+            Assert.Single(response.Headers.WwwAuthenticate);
             Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
             Assert.Equal("realm=\"realm\"", response.Headers.WwwAuthenticate.First().Parameter);
         }
@@ -357,8 +357,10 @@ namespace idunno.Authentication.Test
                 }
             });
 
-            var server = new TestServer(builder);
-            server.BaseAddress = baseAddress;
+            var server = new TestServer(builder)
+            {
+                BaseAddress = baseAddress
+            };
 
             return server;
         }

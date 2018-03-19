@@ -5,4 +5,4 @@ using System.Reflection;
 using System.Resources;
 
 [assembly: AssemblyMetadata("Serviceable", "False")]
-[assembly: NeutralResourcesLanguage("")]
+[assembly: NeutralResourcesLanguage("en-us")]

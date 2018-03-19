@@ -44,7 +44,7 @@ namespace idunno.Authentication.Basic
             {
                 if (!string.IsNullOrEmpty(value) && !IsAscii(value))
                 {
-                    throw new ArgumentOutOfRangeException("Realm", "Realm must be US ASCII");
+                    throw new ArgumentException("Realm must be US ASCII");
                 }
 
                 _realm = value;
@@ -76,7 +76,7 @@ namespace idunno.Authentication.Basic
         }
 
 
-        private bool IsAscii(string input)
+        private static bool IsAscii(string input)
         {
             foreach (char c in input)
             {

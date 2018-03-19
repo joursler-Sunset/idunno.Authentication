@@ -138,7 +138,7 @@ namespace idunno.Authentication.Certificate
 
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            // Certificate auth takes place at the connection level. We can't prompt once we're in
+            // Certificate authentication takes place at the connection level. We can't prompt once we're in
             // user code, so the best thing to do is Forbid, not Challenge.
             Response.StatusCode = 403;
             return Task.CompletedTask;
