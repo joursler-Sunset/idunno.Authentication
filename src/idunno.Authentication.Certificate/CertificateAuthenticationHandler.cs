@@ -15,7 +15,7 @@ namespace idunno.Authentication.Certificate
 {
     internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
     {
-        private static Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
+        private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
 
         public CertificateAuthenticationHandler(
             IOptionsMonitor<CertificateAuthenticationOptions> options,

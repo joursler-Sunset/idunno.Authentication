@@ -559,7 +559,7 @@ namespace idunno.Authentication.Test
 
         private static class Certificates
         {
-            private static string collateralPath =
+            private static readonly string collateralPath =
                 Path.Combine(Directory.GetCurrentDirectory(), "TestCertificates");
 
             public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
