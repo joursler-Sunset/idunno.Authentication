@@ -1,18 +1,26 @@
 <!--
-Checklists for Issue Submission
--------------------------------
+Fill in the following when creating an issue
+--------------------------------------------
 -->
-## Issue description - Describe the problem you are having
+## Description of the problem you are seeing
 
 <!--(Fill in)-->
 
-## Expected result
+## What do you think should be happening?
 
 <!--(Fill in)-->
 
-## Actual result
+## What is actually happening?
 
 <!--(Fill in)-->
+
+## My ConfigureServices() code
+
+[ ] I have app.UseAuthentication() in my Configure() class, and it's before app.UseMvc()
+
+<!--
+    Paste this from your startup.cs file
+-->
 
 ## Steps to reproduce
 
