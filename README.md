@@ -15,18 +15,23 @@ All work is now targetted at ASP.NET Core 2.0.
 
 This is **not** an official Microsoft project, this is an "In my spare time, entirely unsupported"™ effort.
 
-## Are these available as nuget packages?
+## nuget packages
 
 nuget packages are available for the ASP.NET Core 2.0 versions of the authentication handlers.
 
+| Authentication Type | Package Name                      | nuget link                                                        | Current Version |
+|---------------------|-----------------------------------|-------------------------------------------------------------------|-----------------|
+| Basic               | idunno.Authentication.Basic       | https://www.nuget.org/packages/idunno.Authentication.Basic/       | 2.1.0           |
+| Certificate         | idunno.Authentication.Certificate | https://www.nuget.org/packages/idunno.Authentication.Certificate/ | 2.1.0           |
+
 ## What about older versions of ASP.NET Core?
 
-Older versions of Basic Authentication are available in the appropriate branch.
+Older versions of Basic Authentication are available in the appropriate branch. No nuget packages are available for ASP.NET Core 1.x.
 
-Certificate Authentication is only available for ASP.NET Core 2.0. It will not be back-ported.
+Certificate Authentication is only available for ASP.NET Core 2.0. It will not be back ported to 1.x.
 
-| ASP.NET Core MVC Version | Branch                                                           |
-|--------------------------|------------------------------------------------------------------|
+| ASP.NET Core MVC Version | Branch                                                                        |
+|--------------------------|-------------------------------------------------------------------------------|
 | 1.1                      | [rel/1.1.1](https://github.com/blowdart/idunno.Authentication/tree/rel/1.1.1) |
 | 1.0                      | [rel/1.0.0](https://github.com/blowdart/idunno.Authentication/tree/rel/1.0.0) |
 
