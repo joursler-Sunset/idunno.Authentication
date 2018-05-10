@@ -1,7 +1,5 @@
 # How to contribute
 
-As I don't encourage the use of basic authentication in any production service, I don't want to encourage you to contribute to this repository. If you have a burning need to contribute, and your doctor can't clear it up with antibiotics there are a few things to consider when contributing.
-
 The following guidelines for contribution should be followed if you want to submit a pull request.
 
 ## How to prepare
