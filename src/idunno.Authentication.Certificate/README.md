@@ -174,7 +174,7 @@ the following code to configure the header the forwarding handler will build a c
 ```c#
 services.AddCertificateHeaderForwarding(options =>
 {
-    options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME;
+    options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME";
 });
 ```
 
@@ -185,7 +185,7 @@ perform the optional conversion, for example
 ```c#
 services.AddCertificateHeaderForwarding(options =>
 {
-    options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME;
+    options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME";
     options.HeaderConverter = (headerValue) => 
     {
         var clientCertificate = 
