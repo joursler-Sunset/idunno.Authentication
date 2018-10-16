@@ -11,7 +11,7 @@ Basic Authentication started as a demonstration of how to write authentication m
 as something you would seriously consider using, but some people want Basic Authentication and
 Certificate Authentication is a common request on the ASP.NET Core Security repo, so I am releasing my own versions of them.
 
-All work is now targetted at ASP.NET Core 2.0.
+All work is now targeted at ASP.NET Core 2.0.
 
 This is **not** an official Microsoft project, this is an "In my spare time, entirely unsupported"™ effort.
 
@@ -21,8 +21,16 @@ nuget packages are available for the ASP.NET Core 2.0 versions of the authentica
 
 | Authentication Type | Package Name                      | nuget link                                                        | Current Version |
 |---------------------|-----------------------------------|-------------------------------------------------------------------|-----------------|
-| Basic               | idunno.Authentication.Basic       | https://www.nuget.org/packages/idunno.Authentication.Basic/       | 2.1.0           |
-| Certificate         | idunno.Authentication.Certificate | https://www.nuget.org/packages/idunno.Authentication.Certificate/ | 2.1.0           |
+| Basic               | idunno.Authentication.Basic       | https://www.nuget.org/packages/idunno.Authentication.Basic/       | 2.1.1           |
+| Certificate         | idunno.Authentication.Certificate | https://www.nuget.org/packages/idunno.Authentication.Certificate/ | 2.1.1           |
+
+## Version History
+
+| Version | Notes |
+|---------|-------|
+|2.1.1    | Added [SourceLink](https://github.com/dotnet/sourcelink/blob/master/README.md)<br>Changed library dependencies to remove demands for exact versions, following the [.NET Core open-source library guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/)<br>nuget package is now signed
+|2.1.0    | Added Certificate Authentication<br>Fixed Basic Authentication event handling<br>Packages are now Authenticode signed |
+
 
 ## What about older versions of ASP.NET Core?
 
