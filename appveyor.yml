@@ -1,14 +1,29 @@
 image: Visual Studio 2017
+configuration: Debug
+
+for:
+
+# override settings for `master` branch
+-
+  branches:
+    only:
+      - master
+
+  configuration: Release
+
 environment:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
-install:
-  - cmd: nuget install SignClient -Version 0.9.0 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion
-
 before_build:
   - cmd: dotnet restore
   - ps: .\installTestRootCA.ps1
+
+# Build configuration
+branches:
+  only:
+    - master
+    - /rel*/
 
 artifacts:
   - path: 'src\**\*.nupkg'
