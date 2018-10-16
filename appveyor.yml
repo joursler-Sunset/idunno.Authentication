@@ -23,7 +23,7 @@ before_build:
 branches:
   only:
     - master
-    - /rel*/
+    - /rel\/.+/
 
 artifacts:
   - path: 'src\**\*.nupkg'
