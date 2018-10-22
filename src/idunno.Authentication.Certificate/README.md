@@ -8,7 +8,7 @@ that validates the certificate and then gives you an event where you can resolve
 
 You **must** [configure your host](#hostConfiguration) for certificate authentication, be it IIS, Kestrel, Azure Web Applications or whatever else you're using.
 
-## How do I use this?
+## Getting started
 
 First acquire an HTTPS certificate, apply it and then [configure your host](#hostConfiguration) to require certificates.
 
@@ -67,6 +67,40 @@ In the sample you can see that the delegate takes the subject name from the cert
 using the `ClaimsIssuer` from the handler options, then create an `ClaimsPrincipal` from those claims, using the `SchemeName` 
 from the handler options, then it finally calls `context.Success();` to show there's been a successful authentication.
 
+## Accessing a service inside your delegate
+
+For real functionality you will probably want to call a service registered in DI which talks to a database or other type of 
+user store. You can grab your service by using the context passed into your delegates, like so
+
+```c#
+services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+        .AddCertificate(options =>
+        {
+            options.Events = new CertificateAuthenticationEvents
+            {
+                OnValidateCertificate = context =>
+                {
+                    var validationService =
+                        context.HttpContext.RequestServices.GetService<ICertificateValidationService>();
+                    
+                    if (validationService.ValidateCertificate(context.ClientCertificate))
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                            new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+                    }                     
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+```
+
 ## Configuring Certificate Validation
 
 The `CertificateAuthenticationOptions` handler has some built in validations that are the minimium validations you should perform on 
@@ -98,18 +132,17 @@ Revocation checks are only performed when the certificate is chained to a root c
 ### RevocationMode 
 
 A flag which specifies how revocation checks are performed.
-Specifying an online check can result in a long delay while the certificate authority is contacted.
+Specifying an on-line check can result in a long delay while the certificate authority is contacted.
 
 Revocation checks are only performed when the certificate is chained to a root certificate.
 
-
-### How do I configure my app to require a certificate only on certain paths?
+### Can I configure my application to require a certificate only on certain paths?
 
 Not possible, remember the certificate exchange is done that the start of the HTTPS conversation, 
-it's done by the host, not the app. Kestrel, IIS, Azure Web Apps don't have any configuration for
+it's done by the host, not the application. Kestrel, IIS, Azure Web Apps don't have any configuration for
 this sort of thing.
 
-## <a name="hostConfiguration"></a>How do I configure my host to require a certificate?
+## <a name="hostConfiguration"></a>Configuring your host to require certificates
 
 ### Kestrel
 

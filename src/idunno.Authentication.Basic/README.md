@@ -5,7 +5,7 @@ This project contains an implementation of [Basic Authentication](https://tools.
 It started as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using, but enough of
 you want to go with the world's worse authentication standard, so here we are. *You* are responsible for hardening it.
 
-## How do I use this?
+## Getting started
 
 First acquire an HTTPS certificate (see Notes below). Apply it to your website. Remember to renew it when it expires, or go the
 Lets Encrypt route and look like a phishing site.
@@ -77,17 +77,51 @@ are then it will consider that a valid login, create set of claims about the use
 then create an `ClaimsPrincipal` from those claims, using the `SchemeName` from the handler options, then finally call `context.Success();`
 to show there's been a successful authentication.
 
-Of course you'd never implement such a simple validator would you? No? Good. Have a cookie.
+Of course you'd never implement such a simple validation mechanism would you? No? Good. Have a cookie.
 
 The handler will throw an exception if wired up in a site not running on HTTPS and will refuse to respond to the challenge flow 
-which ends up prompting the browser to ask for a username and password. You can override this if you're a horrible person by
+which ends up prompting the browser to ask for a user name and password. You can override this if you're a horrible person by
 setting `AllowInsecureProtocol` to `true` in the handler options. If you do this you deserve everything you get. If you're 
-using a non-interactive client, and are sending a username and password to a server over HTTP the handler will not throw and
+using a non-interactive client, and are sending a user name and password to a server over HTTP the handler will not throw and
 will process the authentication header because frankly it's too late, you've sent everything in plain text, what's the point?
 
-## How do I use this in production?
+## Accessing a service inside your delegate
 
-I'd never recommend you use basic authentication in production, but, if you must here are some ideas on how to harden your validation routine. 
+For real functionality you will probably want to call a service registered in DI which talks to a database or other type of 
+user store. You can grab your service by using the context passed into your delegates, like so
+
+```c#
+services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+  .AddBasic(options =>
+  {
+    options.Realm = "idunno";
+    options.Events = new BasicAuthenticationEvents
+    {
+      OnValidateCredentials = context =>
+      {
+        var validationService =
+          context.HttpContext.RequestServices.GetService<IUserValidationService>();
+        if (validationService.AreCredentialsValid(context.Username, context.Password))
+        {
+          var claims = new[]
+          {
+            new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+            new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+          };
+
+          context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+          context.Success();
+        }
+
+        return Task.CompletedTask;
+      }
+    };
+  })
+```
+
+## Using Basic Authentication in production
+
+I'd never recommend you use basic authentication in production unless you're forced to in order to comply with a standard, but, if you must here are some ideas on how to harden your validation routine. 
 
 1. In your `OnValidateCredentials` implementation keep a count of failed login attempts, and the IP addresses they come from.
 2. Lock out accounts after X failed login attempts, where X is a count you feel is reasonable for your situation.
@@ -106,7 +140,7 @@ I'd never recommend you use basic authentication in production, but, if you must
    your site if your site is going to be accessed through a browser.
 8. Reconsider your life choices, and look at using OAuth2 or OpenIDConnect instead.
 
-## What about older versions of ASP.NET Core?
+## Support for older versions of ASP.NET Core
 
 Older versions are available in the appropriate branch.
 
@@ -114,6 +148,8 @@ Older versions are available in the appropriate branch.
 |--------------------------|------------------------------------------------------------------|
 | 1.1                      | [rel/1.1.1](https://github.com/blowdart/idunno.Authentication/tree/rel/1.1.1) |
 | 1.0                      | [rel/1.0.0](https://github.com/blowdart/idunno.Authentication/tree/rel/1.0.0) |
+
+No nuget packages are available for older versions of ASP.NET Core.
 
 ## Notes
 
