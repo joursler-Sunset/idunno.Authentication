@@ -201,51 +201,51 @@ namespace idunno.Authentication.Certificate
             var claims = new List<Claim>();
             var issuer = certificate.Issuer;
 
-            claims.Add(new Claim("issuer", issuer));
+            claims.Add(new Claim("issuer", issuer, ClaimValueTypes.String, Options.ClaimsIssuer));
 
             var thumbprint = certificate.Thumbprint;
-            claims.Add(new Claim(ClaimTypes.Thumbprint, thumbprint, ClaimValueTypes.Base64Binary, issuer));
+            claims.Add(new Claim(ClaimTypes.Thumbprint, thumbprint, ClaimValueTypes.Base64Binary, Options.ClaimsIssuer));
 
             var value = certificate.SubjectName.Name;
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.X500DistinguishedName, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.X500DistinguishedName, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.SerialNumber;
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.SerialNumber, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.SerialNumber, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.GetNameInfo(X509NameType.DnsName, false);
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.Dns, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.Dns, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.GetNameInfo(X509NameType.SimpleName, false);
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.Name, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.Name, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.GetNameInfo(X509NameType.EmailName, false);
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.Email, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.Email, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.GetNameInfo(X509NameType.UpnName, false);
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.Upn, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.Upn, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             value = certificate.GetNameInfo(X509NameType.UrlName, false);
             if (string.IsNullOrWhiteSpace(value))
             {
-                claims.Add(new Claim(ClaimTypes.Uri, value, ClaimValueTypes.String, issuer));
+                claims.Add(new Claim(ClaimTypes.Uri, value, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             var identity = new ClaimsIdentity(claims, CertificateAuthenticationDefaults.AuthenticationScheme);
