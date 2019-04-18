@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
@@ -112,8 +114,7 @@ namespace idunno.Authentication.Certificate
                 if (validateCertificateContext.Result != null &&
                     validateCertificateContext.Result.Succeeded)
                 {
-                    var ticket = new AuthenticationTicket(validateCertificateContext.Principal, Scheme.Name);
-                    return AuthenticateResult.Success(ticket);
+                    return Success(validateCertificateContext.Principal, clientCertificate);
                 }
 
                 if (validateCertificateContext.Result != null &&
@@ -122,7 +123,7 @@ namespace idunno.Authentication.Certificate
                     return AuthenticateResult.Fail(validateCertificateContext.Result.Failure);
                 }
 
-                return AuthenticateResult.NoResult();
+                return Success(CreatePrincipal(clientCertificate), clientCertificate);
             }
             catch (Exception ex)
             {
@@ -193,6 +194,76 @@ namespace idunno.Authentication.Certificate
             }
 
             return chainPolicy;
+        }
+
+        private ClaimsPrincipal CreatePrincipal(X509Certificate2 certificate)
+        {
+            var claims = new List<Claim>();
+            var issuer = certificate.Issuer;
+
+            claims.Add(new Claim("issuer", issuer, ClaimValueTypes.String, Options.ClaimsIssuer));
+
+            var thumbprint = certificate.Thumbprint;
+            claims.Add(new Claim(ClaimTypes.Thumbprint, thumbprint, ClaimValueTypes.Base64Binary, Options.ClaimsIssuer));
+
+            var value = certificate.SubjectName.Name;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.X500DistinguishedName, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.SerialNumber;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.SerialNumber, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.GetNameInfo(X509NameType.DnsName, false);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.Dns, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.GetNameInfo(X509NameType.SimpleName, false);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.Name, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.GetNameInfo(X509NameType.EmailName, false);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.GetNameInfo(X509NameType.UpnName, false);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.Upn, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            value = certificate.GetNameInfo(X509NameType.UrlName, false);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                claims.Add(new Claim(ClaimTypes.Uri, value, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var identity = new ClaimsIdentity(claims, CertificateAuthenticationDefaults.AuthenticationScheme);
+            return new ClaimsPrincipal(identity);
+        }
+
+        private AuthenticateResult Success(ClaimsPrincipal principal, X509Certificate2 certificate)
+        {
+            var props = new AuthenticationProperties
+            {
+                Items =
+                {
+                    { CertificateAuthenticationDefaults.CertificateItemsKey, certificate.GetRawCertDataString() }
+                }
+            };
+
+            var ticket = new AuthenticationTicket(principal, props, Scheme.Name);
+            return AuthenticateResult.Success(ticket);
         }
     }
 }
