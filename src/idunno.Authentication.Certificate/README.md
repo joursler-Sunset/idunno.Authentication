@@ -33,25 +33,7 @@ For example;
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-            .AddCertificate(options =>
-            {
-                options.Events = new CertificateAuthenticationEvents
-                {
-                    OnValidateCertificate = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                            new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
-                        };
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                        context.Success();
-
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+            .AddCertificate();
     // All the other service configuration.
 }
 
@@ -63,43 +45,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 }
 ```
 
-In the sample you can see that the delegate takes the subject name from the certificate and constructs a `ClaimsIdentity` from it, 
-using the `ClaimsIssuer` from the handler options, then create an `ClaimsPrincipal` from those claims, using the `SchemeName` 
-from the handler options, then it finally calls `context.Success();` to show there's been a successful authentication.
-
-## Accessing a service inside your delegate
-
-For real functionality you will probably want to call a service registered in DI which talks to a database or other type of 
-user store. You can grab your service by using the context passed into your delegates, like so
-
-```c#
-services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-        .AddCertificate(options =>
-        {
-            options.Events = new CertificateAuthenticationEvents
-            {
-                OnValidateCertificate = context =>
-                {
-                    var validationService =
-                        context.HttpContext.RequestServices.GetService<ICertificateValidationService>();
-                    
-                    if (validationService.ValidateCertificate(context.ClientCertificate))
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                            new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
-                        };
-
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                        context.Success();
-                    }                     
-
-                    return Task.CompletedTask;
-                }
-            };
-        });
-```
+In the sample above you can see the default way to add certificate authentication. The handler will construct a user principal using the common certificate properties for you.
 
 ## Configuring Certificate Validation
 
@@ -141,6 +87,71 @@ Revocation checks are only performed when the certificate is chained to a root c
 Not possible, remember the certificate exchange is done that the start of the HTTPS conversation, 
 it's done by the host, not the application. Kestrel, IIS, Azure Web Apps don't have any configuration for
 this sort of thing.
+
+# Handler events
+
+The handler has two events, `OnAuthenticationFailed()`, which is called if an exception happens during authentication and allows you to react, and `OnValidateCertificate()` which is 
+called after certificate has been validated, passed validation, abut before the default principal has been created. This allows you to perform your own validation, for example 
+checking if the certificate is one your services knows about, and to construct your own principal. For example,
+
+```c#
+services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+        .AddCertificate(options =>
+        {
+            options.Events = new CertificateAuthenticationEvents
+            {
+                OnValidateCertificate = context =>
+                {
+                    var claims = new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                        new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                    };
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                    context.Success();
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+```
+
+If you find the inbound certificate doesn't meet your extra validation call `context.Fail("failure Reason")` with a failure reason.
+
+For real functionality you will probably want to call a service registered in DI which talks to a database or other type of 
+user store. You can grab your service by using the context passed into your delegates, like so
+
+```c#
+services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+        .AddCertificate(options =>
+        {
+            options.Events = new CertificateAuthenticationEvents
+            {
+                OnValidateCertificate = context =>
+                {
+                    var validationService =
+                        context.HttpContext.RequestServices.GetService<ICertificateValidationService>();
+                    
+                    if (validationService.ValidateCertificate(context.ClientCertificate))
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                            new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+                    }                     
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+```
+Note that conceptually the validation of the certification is an authorization concern, and putting a check on, for example, an issuer or thumbprint in an authorization policy rather 
+than inside OnValidateCertificate() is perfectly acceptable.
 
 ## <a name="hostConfiguration"></a>Configuring your host to require certificates
 

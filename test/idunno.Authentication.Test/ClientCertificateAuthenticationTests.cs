@@ -20,44 +20,12 @@ using Xunit;
 
 using idunno.Authentication.Certificate;
 using System.IO;
+using System.Linq;
 
 namespace idunno.Authentication.Test
 {
     public class ClientCertificateAuthenticationTests
     {
-        private CertificateAuthenticationEvents sucessfulValidationEvents = new CertificateAuthenticationEvents()
-        {
-            OnValidateCertificate = context =>
-            {
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                    new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
-                };
-
-                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                context.Success();
-                return Task.CompletedTask;
-            }
-        };
-
-        private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
-        {
-            OnValidateCertificate = context =>
-            {
-                context.Fail("Not validated");
-                return Task.CompletedTask;
-            }
-        };
-
-        private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
-        {
-            OnValidateCertificate = context =>
-            {
-                return Task.CompletedTask;
-            }
-        };
-
         [Fact]
         public void CheckThatTestRootCAIsLoaded()
         {
@@ -94,7 +62,7 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
-        public void ValidateIsSelfSignedExtensionMethod()
+        public void VerifyIsSelfSignedExtensionMethod()
         {
             Assert.True(Certificates.SelfSignedValidWithNoEku.IsSelfSigned());
         }
@@ -356,7 +324,7 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
-        public async Task DoingNothingInTheValidationEventReturnsForbidden()
+        public async Task DoingNothingInTheValidationEventReturnsOK()
         {
             var server = CreateServer(
                 new CertificateAuthenticationOptions
@@ -367,7 +335,7 @@ namespace idunno.Authentication.Test
                 Certificates.RootedServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -449,6 +417,156 @@ namespace idunno.Authentication.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        [Fact]
+        public async Task VerifyNoEventWireupWithAValidCertificateCreatesADefaultUser()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned
+                },
+                Certificates.SelfSignedValidWithNoEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            XElement responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+            Assert.NotNull(responseAsXml);
+
+            // There should always be an Issuer and a Thumbprint.
+            var actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == "issuer");
+            Assert.Single(actual);
+            Assert.Equal(Certificates.SelfSignedValidWithNoEku.Issuer, actual.First().Value);
+
+            actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Thumbprint);
+            Assert.Single(actual);
+            Assert.Equal(Certificates.SelfSignedValidWithNoEku.Thumbprint, actual.First().Value);
+
+            // Now the optional ones
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SubjectName.Name))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.X500DistinguishedName);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.SubjectName.Name, actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.SerialNumber))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.SerialNumber);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.SerialNumber, actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false)))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Dns);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.DnsName, false), actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false)))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Email);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.EmailName, false), actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false)))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.SimpleName, false), actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false)))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Upn);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UpnName, false), actual.First().Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false)))
+            {
+                actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Uri);
+                if (actual.Count() > 0)
+                {
+                    Assert.Single(actual);
+                    Assert.Equal(Certificates.SelfSignedValidWithNoEku.GetNameInfo(X509NameType.UrlName, false), actual.First().Value);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task VerifyValidationEventPrincipalIsPropogated()
+        {
+            const string Expected = "John Doe";
+
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    AllowedCertificateTypes = CertificateTypes.SelfSigned,
+                    Events = new CertificateAuthenticationEvents
+                    {
+                        OnValidateCertificate = context =>
+                        {
+                            var claims = new[]
+                            {
+                                new Claim(ClaimTypes.Name, Expected, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                            };
+
+                            context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                            context.Success();
+                            return Task.CompletedTask;
+                        }
+                    }
+                },
+                Certificates.SelfSignedValidWithNoEku);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            XElement responseAsXml = null;
+            if (response.Content != null &&
+                response.Content.Headers.ContentType != null &&
+                response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                responseAsXml = XElement.Parse(responseContent);
+            }
+
+            Assert.NotNull(responseAsXml);
+            var actual = responseAsXml.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(actual);
+            Assert.Equal(Expected, actual.First().Value);
+            Assert.Single(responseAsXml.Elements("claim"));
+        }
+
         private static TestServer CreateServer(
             CertificateAuthenticationOptions configureOptions,
             X509Certificate2 clientCertificate = null,
@@ -487,6 +605,14 @@ namespace idunno.Authentication.Test
                         if (authenticationResult.Succeeded)
                         {
                             response.StatusCode = (int)HttpStatusCode.OK;
+                            response.ContentType = "text/xml";
+
+                            await response.WriteAsync("<claims>");
+                            foreach (Claim claim in context.User.Claims)
+                            {
+                                await response.WriteAsync($"<claim Type=\"{claim.Type}\" Issuer=\"{claim.Issuer}\">{claim.Value}</claim>");
+                            }
+                            await response.WriteAsync("</claims>");
                         }
                         else
                         {
@@ -530,32 +656,38 @@ namespace idunno.Authentication.Test
             return server;
         }
 
-        private static async Task<Transaction> SendAsync(TestServer server, string uri)
+        private CertificateAuthenticationEvents sucessfulValidationEvents = new CertificateAuthenticationEvents()
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            var transaction = new Transaction
+            OnValidateCertificate = context =>
             {
-                Request = request,
-                Response = await server.CreateClient().SendAsync(request),
-            };
-            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                    new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                };
 
-            if (transaction.Response.Content != null &&
-                transaction.Response.Content.Headers.ContentType != null &&
-                transaction.Response.Content.Headers.ContentType.MediaType == "text/xml")
-            {
-                transaction.ResponseElement = XElement.Parse(transaction.ResponseText);
+                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                context.Success();
+                return Task.CompletedTask;
             }
-            return transaction;
-        }
+        };
 
-        private class Transaction
+        private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
         {
-            public HttpRequestMessage Request { get; set; }
-            public HttpResponseMessage Response { get; set; }
-            public string ResponseText { get; set; }
-            public XElement ResponseElement { get; set; }
-        }
+            OnValidateCertificate = context =>
+            {
+                context.Fail("Not validated");
+                return Task.CompletedTask;
+            }
+        };
+
+        private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
+        {
+            OnValidateCertificate = context =>
+            {
+                return Task.CompletedTask;
+            }
+        };
 
         private static class Certificates
         {

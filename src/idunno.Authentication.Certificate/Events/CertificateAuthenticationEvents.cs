@@ -19,7 +19,7 @@ namespace idunno.Authentication.Certificate
         public Func<CertificateAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when a certificate need validation.
+        /// A delegate assigned to this property will be invoked when a certificate has based basic validation, but where custom validation may be needed.
         /// </summary>
         /// <remarks>
         /// You must provide a delegate for this property for authentication to occur.
