@@ -8,10 +8,11 @@ This repository contains a collection of various authentication mechanisms for A
 * [Certificate Authentication](src/idunno.Authentication.Certificate/)
 
 Basic Authentication started as a demonstration of how to write authentication middleware and was not
-as something you would seriously consider using, but some people want Basic Authentication and
-Certificate Authentication is a common request on the ASP.NET Core Security repo, so I am releasing my own versions of them.
+as something you would seriously consider using, but some people want Basic Authentication so here it is.
 
-All work is now targeted at ASP.NET Core 2.0.
+Certificate Authentication is a common request on the ASP.NET Core Security repo, so I wrote one for Core 2.x. ASP.NET Core 3.0 took that as a starting point and includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
+
+All packages are targeted at ASP.NET Core 2.1.
 
 This is **not** an official Microsoft project, this is an "In my spare time, entirely unsupported"™ effort.
 
@@ -24,10 +25,13 @@ nuget packages are available for the ASP.NET Core 2.0 versions of the authentica
 | Basic               | idunno.Authentication.Basic       | https://www.nuget.org/packages/idunno.Authentication.Basic/       | 2.1.1           |
 | Certificate         | idunno.Authentication.Certificate | https://www.nuget.org/packages/idunno.Authentication.Certificate/ | 2.1.1           |
 
+
+
 ## Version History
 
 | Version | Notes |
 |---------|-------|
+|2.2.0    | Updated nuget license and package icon, fixed [scheme name bug](https://github.com/blowdart/idunno.Authentication/issues/36) |
 |2.1.1    | Added [SourceLink](https://github.com/dotnet/sourcelink/blob/master/README.md)<br>Changed library dependencies to remove demands for exact versions, following the [.NET Core open-source library guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/)<br>nuget package is now signed
 |2.1.0    | Added Certificate Authentication<br>Fixed Basic Authentication event handling<br>Packages are now Authenticode signed |
 
