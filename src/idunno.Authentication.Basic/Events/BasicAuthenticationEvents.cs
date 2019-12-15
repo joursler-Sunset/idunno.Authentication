@@ -14,7 +14,7 @@ namespace idunno.Authentication.Basic
     public class BasicAuthenticationEvents
     {
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the authentication fails.
+        /// A delegate assigned to this property will be invoked when the authentication handler fails and encounters an exception.
         /// </summary>
         public Func<BasicAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 

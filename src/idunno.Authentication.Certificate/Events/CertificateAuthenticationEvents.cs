@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace idunno.Authentication.Certificate
 {
     /// <summary>
-    /// This default implementation of the IBasicAuthenticationEvents may be used if the
+    /// This default implementation of the ICertificateAuthenticationEvents may be used if the
     /// application only needs to override a few of the interface methods.
     /// This may be used as a base class or may be instantiated directly.
     /// </summary>
     public class CertificateAuthenticationEvents
     {
         /// <summary>
-        /// A delegate assigned to this property will be invoked when the authentication fails.
+        /// /// A delegate assigned to this property will be invoked when the authentication handler fails and encounters an exception.
         /// </summary>
         public Func<CertificateAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
