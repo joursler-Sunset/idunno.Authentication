@@ -14,7 +14,11 @@ namespace idunno.Authentication.Basic
     /// </summary>
     public class BasicAuthenticationOptions : AuthenticationSchemeOptions
     {
+        private const string DefaultHttpAuthenticationScheme = "Basic";
+
         private string _realm;
+
+        private string _httpAuthenticationScheme;
 
         /// <summary>
         /// Create an instance of the options initialized with the default values
@@ -48,6 +52,34 @@ namespace idunno.Authentication.Basic
                 }
 
                 _realm = value;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the a custom authentication scheme sent in the WWW-Authenticate header.
+        /// </summary>
+        /// <remarks>
+        /// The authentication scheme controls the browser UI and allows the browser to
+        /// authenticate in the correct manner, popping up a UI to allow for user name and password.
+        /// Some users may want to override the default scheme to suppress the browser UI
+        /// in XMLHttpRequest requests. This property allows the scheme to be customised.
+        /// </remarks>
+        public string HttpAuthenticationScheme
+        {
+            get
+            {
+                return _httpAuthenticationScheme ?? DefaultHttpAuthenticationScheme;
+            }
+
+            set
+            {
+                if (!string.IsNullOrEmpty(value) && !IsAscii(value))
+                {
+                    throw new ArgumentException("HttpAuthenticationScheme must be US ASCII");
+                }
+
+                _httpAuthenticationScheme = value;
             }
         }
 
