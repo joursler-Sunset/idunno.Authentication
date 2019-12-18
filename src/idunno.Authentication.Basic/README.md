@@ -79,6 +79,9 @@ to show there's been a successful authentication.
 
 Of course you'd never implement such a simple validation mechanism would you? No? Good. Have a cookie.
 
+If you want to use Basic authentication within an Ajax application then it you may want to stop the browser prompting for a username and password. 
+This prompt happens when a `WWWAuthenticate` header is sent, you can suppress this header by setting the `SuppressWWWAuthenticateHeader` flag on options.
+
 The handler will throw an exception if wired up in a site not running on HTTPS and will refuse to respond to the challenge flow 
 which ends up prompting the browser to ask for a user name and password. You can override this if you're a horrible person by
 setting `AllowInsecureProtocol` to `true` in the handler options. If you do this you deserve everything you get. If you're 

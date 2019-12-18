@@ -53,7 +53,7 @@ namespace idunno.Authentication.Basic
                 return AuthenticateResult.NoResult();
             }
 
-            if (!authorizationHeader.StartsWith(Options.HttpAuthenticationScheme + ' ', StringComparison.OrdinalIgnoreCase))
+            if (!authorizationHeader.StartsWith(_Scheme + ' ', StringComparison.OrdinalIgnoreCase))
             {
                 return AuthenticateResult.NoResult();
             }
@@ -144,8 +144,11 @@ namespace idunno.Authentication.Basic
             else
             {
                 Response.StatusCode = 401;
-                var headerValue = Options.HttpAuthenticationScheme + $" realm=\"{Options.Realm}\"";
-                Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
+                if (!Options.SuppressWWWAuthenticateHeader)
+                {
+                    var headerValue = _Scheme + $" realm=\"{Options.Realm}\"";
+                    Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
+                }
             }
 
             return Task.CompletedTask;

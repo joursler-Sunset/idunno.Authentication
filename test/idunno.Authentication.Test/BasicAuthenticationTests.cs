@@ -59,33 +59,6 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
-        public void DefaultHttpAuthenticationSchemeIsBasic()
-        {
-            const string httpAuthenticationScheme = "Basic";
-            var options = new BasicAuthenticationOptions();
-            Assert.Equal(httpAuthenticationScheme, options.HttpAuthenticationScheme);
-        }
-
-        [Fact]
-        public void SettingAnAsciiHttpAuthenticationSchemeWorks()
-        {
-            const string httpAuthenticationScheme = "Custom";
-            var options = new BasicAuthenticationOptions
-            {
-                HttpAuthenticationScheme = httpAuthenticationScheme
-            };
-            Assert.Equal(httpAuthenticationScheme, options.HttpAuthenticationScheme);
-        }
-
-        [Fact]
-        public void SettingANonAsciiHttpAuthenticationSchemeThrows()
-        {
-            var options = new BasicAuthenticationOptions();
-            Exception ex = Assert.Throws<ArgumentException>(() => options.HttpAuthenticationScheme = "💩");
-            Assert.Equal("HttpAuthenticationScheme must be US ASCII", ex.Message);
-        }
-
-        [Fact]
         public async Task NormalRequestPassesThrough()
         {
             var server = CreateServer(new BasicAuthenticationOptions());
@@ -332,17 +305,15 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
-        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenicateHeaderAndCustomSchemeWhenNoAuthenticateHeaderIsPresent()
+        public async Task ValidateSupressionOfWWWAuthenticationHeader()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
-                HttpAuthenticationScheme = "Custom"
+                SuppressWWWAuthenticateHeader = true
             });
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Single(response.Headers.WwwAuthenticate);
-            Assert.Equal("Custom", response.Headers.WwwAuthenticate.First().Scheme);
-            Assert.Equal("realm=\"\"", response.Headers.WwwAuthenticate.First().Parameter);
+            Assert.Empty(response.Headers.WwwAuthenticate);
         }
 
         private static TestServer CreateServer(
@@ -388,9 +359,9 @@ namespace idunno.Authentication.Test
                 {
                     services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme).AddBasic(options =>
                     {
-                        options.HttpAuthenticationScheme = configureOptions.HttpAuthenticationScheme;
-                        options.Realm = configureOptions.Realm;
                         options.Events = configureOptions.Events;
+                        options.Realm = configureOptions.Realm;
+                        options.SuppressWWWAuthenticateHeader = configureOptions.SuppressWWWAuthenticateHeader;
                     });
                 }
                 else
