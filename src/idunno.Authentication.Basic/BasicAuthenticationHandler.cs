@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using System.Globalization;
 
 namespace idunno.Authentication.Basic
 {
@@ -70,14 +71,30 @@ namespace idunno.Authentication.Basic
             try
             {
                 string decodedCredentials = string.Empty;
+                byte[] base64DecodedCredentials;
                 try
                 {
-                    decodedCredentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+                    base64DecodedCredentials = Convert.FromBase64String(encodedCredentials);
+                }
+                catch (FormatException)
+                {
+                    const string failedToDecodeCredentials = "Cannot convert credentials from Base64.";
+                    Logger.LogInformation(failedToDecodeCredentials);
+                    return AuthenticateResult.Fail(failedToDecodeCredentials);
+                }
+
+                try
+                {
+                    decodedCredentials = Encoding.UTF8.GetString(base64DecodedCredentials);
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Failed to decode credentials : {encodedCredentials}", ex);
+                    const string failedToDecodeCredentials = "Cannot build credentials from decoded base64 value, exception {0} encountered.";
+                    var logMessage = string.Format(CultureInfo.InvariantCulture, failedToDecodeCredentials, ex.Message);
+                    Logger.LogInformation(logMessage);
+                    return AuthenticateResult.Fail(logMessage);
                 }
+
 
                 var delimiterIndex = decodedCredentials.IndexOf(':');
                 if (delimiterIndex == -1)

@@ -305,6 +305,17 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
+        public async Task ValidateAuthenticationFailsWhenAnInvalidUTF8AuthenticationHeaderIsSent()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+            });
+
+            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/challenge", "%%%%%");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        }
+
+        [Fact]
         public async Task ValidateSupressionOfWWWAuthenticationHeader()
         {
             var server = CreateServer(new BasicAuthenticationOptions
@@ -426,6 +437,28 @@ namespace idunno.Authentication.Test
             }
             return transaction;
         }
+
+        private static async Task<Transaction> SendAsyncWithRawHeaderValue(TestServer server, string uri, string authorizationHeaderValue, string scheme = "Basic")
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Add(HeaderNames.Authorization, scheme + " " + authorizationHeaderValue);
+
+            var transaction = new Transaction
+            {
+                Request = request,
+                Response = await server.CreateClient().SendAsync(request),
+            };
+            transaction.ResponseText = await transaction.Response.Content.ReadAsStringAsync();
+
+            if (transaction.Response.Content != null &&
+                transaction.Response.Content.Headers.ContentType != null &&
+                transaction.Response.Content.Headers.ContentType.MediaType == "text/xml")
+            {
+                transaction.ResponseElement = XElement.Parse(transaction.ResponseText);
+            }
+            return transaction;
+        }
+
 
         private class Transaction
         {
