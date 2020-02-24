@@ -184,16 +184,16 @@ namespace idunno.Authentication.Test
         }
 
         [Fact]
-        public async Task ValidateHandlerWillThrowExceptionByDefaultOnHttpWhenChallengeIsStarted()
+        public async Task ValidateUpgradeRequestedReturnedOnHttpRequest()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
-                AllowInsecureProtocol = false
             });
-
-            var transaction = await SendAsync(server, "http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.InternalServerError, transaction.Response.StatusCode);
+            var response = await server.CreateClient().GetAsync("http://example.com/challenge");
+            Assert.Equal(StatusCodes.Status421MisdirectedRequest, (int)response.StatusCode);
+            Assert.Empty(response.Headers.WwwAuthenticate);
         }
+
 
         [Fact]
         public async Task ValidateHandlerWillRespondOnHttpWhenSecurityIsDisabled()
@@ -215,6 +215,7 @@ namespace idunno.Authentication.Test
             var transaction = await SendAsync(server, "http://example.com/", "username", "password");
             Assert.True(called);
         }
+
 
         [Fact]
         public async Task ValidateOnValidateCredentialsIsNotCalledWhenTheAuthorizationHeaderHasNoCredentials()

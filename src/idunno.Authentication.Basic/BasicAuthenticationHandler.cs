@@ -154,9 +154,10 @@ namespace idunno.Authentication.Basic
             {
                 const string insecureProtocolMessage = "Request is HTTP, Basic Authentication will not respond.";
                 Logger.LogInformation(insecureProtocolMessage);
-                Response.StatusCode = 500;
-                var encodedResponseText = Encoding.UTF8.GetBytes(insecureProtocolMessage);
-                Response.Body.Write(encodedResponseText, 0, encodedResponseText.Length);
+                // 421 Misdirected Request
+                // The request was directed at a server that is not able to produce a response.
+                // This can be sent by a server that is not configured to produce responses for the combination of scheme and authority that are included in the request URI.
+                Response.StatusCode = StatusCodes.Status421MisdirectedRequest;
             }
             else
             {
