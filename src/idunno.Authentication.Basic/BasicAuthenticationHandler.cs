@@ -96,7 +96,7 @@ namespace idunno.Authentication.Basic
                 }
 
 
-                var delimiterIndex = decodedCredentials.IndexOf(':');
+                var delimiterIndex = decodedCredentials.IndexOf(":", StringComparison.OrdinalIgnoreCase);
                 if (delimiterIndex == -1)
                 {
                     const string missingDelimiterMessage = "Invalid credentials, missing delimiter.";
