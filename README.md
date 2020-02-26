@@ -10,9 +10,11 @@ This repository contains a collection of various authentication mechanisms for A
 Basic Authentication started as a demonstration of how to write authentication middleware and was not
 as something you would seriously consider using, but some people want Basic Authentication so here it is.
 
-Certificate Authentication is a common request on the ASP.NET Core Security repo, so I wrote one for Core 2.x. ASP.NET Core 3.0 took that as a starting point and includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
+Certificate Authentication is a common request on the ASP.NET Core Security repo, so I wrote one for Core 2.x. 
+ASP.NET Core 3.0 took that as a starting point and includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
 
-All packages are targeted at ASP.NET Core 2.1.
+Basic Authentication is available for ASP.NET Core 2.1, 3.0 and 3.1.
+Certification Authentication is only targeted at ASP.NET Core 2.1.
 
 This is **not** an official Microsoft project, this is an "In my spare time, entirely unsupported"™ effort.
 
@@ -31,6 +33,7 @@ nuget packages are available for the ASP.NET Core 2.0 versions of the authentica
 
 | Version | Notes |
 |---------|-------|
+|2.2.2    | Basic auth now [multi-targets](https://github.com/blowdart/idunno.Authentication/issues/46) Core 2.1, 3.0 and 3.1 |
 |2.2.1    | Basic auth now [returns a 421 request when a request is issued over HTTP](https://github.com/blowdart/idunno.Authentication/issues/44), unless AllowInsecureProtocol is set |
 |2.2.0    | Basic auth no longer throws exception when [invalid base64 data sent in authentication header](https://github.com/blowdart/idunno.Authentication/issues/40)<br>Added property for suppressing the WWW-Authenticate header [scheme](https://github.com/blowdart/idunno.Authentication/issues/36)<br>Updated nuget license and package icon |
 |2.1.1    | Added [SourceLink](https://github.com/dotnet/sourcelink/blob/master/README.md)<br>Changed library dependencies to remove demands for exact versions, following the [.NET Core open-source library guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/)<br>nuget package is now signed
