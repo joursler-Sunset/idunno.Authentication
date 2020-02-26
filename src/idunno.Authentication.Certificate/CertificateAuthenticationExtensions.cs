@@ -27,6 +27,11 @@ namespace Microsoft.AspNetCore.Builder
             string authenticationScheme,
             Action<CertificateAuthenticationOptions> configureOptions)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
         }
     }

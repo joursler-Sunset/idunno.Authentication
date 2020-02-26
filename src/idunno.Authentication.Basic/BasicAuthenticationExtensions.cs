@@ -27,6 +27,11 @@ namespace Microsoft.AspNetCore.Builder
             string authenticationScheme,
             Action<BasicAuthenticationOptions> configureOptions)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             return builder.AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler>(authenticationScheme, configureOptions);
         }
     }

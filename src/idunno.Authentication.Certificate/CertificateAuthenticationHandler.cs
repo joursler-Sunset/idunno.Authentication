@@ -84,24 +84,22 @@ namespace idunno.Authentication.Certificate
 
             try
             {
-                var chain = new X509Chain
+                using (var chain = new X509Chain { ChainPolicy = chainPolicy })
                 {
-                    ChainPolicy = chainPolicy
-                };
+                    var certificateIsValid = chain.Build(clientCertificate);
 
-                var certificateIsValid = chain.Build(clientCertificate);
-
-                if (!certificateIsValid)
-                {
-                    using (Logger.BeginScope(clientCertificate.SHA256Thumprint()))
+                    if (!certificateIsValid)
                     {
-                        Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
-                        foreach (var validationFailure in chain.ChainStatus)
+                        using (Logger.BeginScope(clientCertificate.SHA256Thumprint()))
                         {
-                            Logger.LogWarning("{0} {1}", validationFailure.Status, validationFailure.StatusInformation);
+                            Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
+                            foreach (var validationFailure in chain.ChainStatus)
+                            {
+                                Logger.LogWarning("{0} {1}", validationFailure.Status, validationFailure.StatusInformation);
+                            }
                         }
+                        return AuthenticateResult.Fail("Client certificate failed validation.");
                     }
-                    return AuthenticateResult.Fail("Client certificate failed validation.");
                 }
 
                 var validateCertificateContext = new ValidateCertificateContext(Context, Scheme, Options)

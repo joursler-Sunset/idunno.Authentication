@@ -41,6 +41,11 @@ namespace idunno.Authentication.Certificate
 
         public async Task Invoke(HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
             if (!string.IsNullOrWhiteSpace(_options.CertificateHeader))
             {
                 var clientCertificate = await httpContext.Connection.GetClientCertificateAsync();
