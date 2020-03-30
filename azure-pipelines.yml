@@ -46,15 +46,15 @@ steps:
     command: build
     projects: | 
       '**/*.csproj'
-      '!/samples/**/*.csproj'
+      '!**/samples/**/*.csproj'
     arguments: '--configuration Release'
 
 - task: DotNetCoreCLI@2
   displayName: dotnet test
   inputs:
     command: test
-    projects: '/test/**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    projects: '**/test/**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
 # Create nuget packages
 - task: DotNetCoreCLI@2
