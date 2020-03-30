@@ -1,73 +1,73 @@
-# Build, test and package idunno.Authentication nuget packages
+  # Build, test and package idunno.Authentication nuget packages
 
 trigger:
 - master
 - rel/*
 
-pool:
-  vmImage: 'windows-latest'
+pr:
+- master
+- rel/*
 
 variables:
   solution: '**/*.sln'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-steps:
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+  pool:
+    vmImage: 'windows-latest'
 
-# Setup Root CA for tests
-- task: PowerShell@2
-  displayName: 'Setup Test Certificate Authority'
-  inputs:
-    filePath: installTestRootCA.ps1
+    steps:
+    # Setup Root CA for tests
+    - task: PowerShell@2
+      displayName: 'Setup Test Certificate Authority'
+      inputs:
+        filePath: installTestRootCA.ps1
 
-- task: UseDotNet@2
-  displayName: 'Install .NET Core 3.x SDK'
-  inputs:
-    packageType: 'sdk'
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core 3.x SDK'
+      inputs:
+        packageType: 'sdk'
 
-- task: UseDotNet@2
-  displayName: 'Install .NET Core 2.x Runtime'
-  inputs:
-    version: '2.2.x'
-    packageType: runtime
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core 2.x Runtime'
+      inputs:
+        version: '2.2.x'
+        packageType: runtime
 
-- task: NuGetToolInstaller@1
-  displayName: 'Install NuGet'
+    # Build and test
+    - task: DotNetCoreCLI@2
+      displayName: dotnet build
+      inputs:
+        command: build
+      projects: |
+        '**/*.csproj'
+        '!**/samples/**/*.csproj'
+      arguments: '--configuration Release'
 
-- task: NuGetCommand@2
-  displayName: 'nuget restore'
-  inputs:
-    restoreSolution: '$(solution)'
+    - task: DotNetCoreCLI@2
+      displayName: dotnet test
+      inputs:
+        command: test
+        projects: '**/test/**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
-# Build and test
-- task: DotNetCoreCLI@2
-  displayName: dotnet build
-  inputs:
-    command: build
-    projects: | 
-      '**/*.csproj'
-      '!**/samples/**/*.csproj'
-    arguments: '--configuration Release'
+    # Create nuget packages
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet pack"
+      inputs:
+        command: 'pack'
+        arguments: '--configuration $(buildConfiguration)'
+        packagesToPack: '/src/**/*.csproj'
+        nobuild: true
 
-- task: DotNetCoreCLI@2
-  displayName: dotnet test
-  inputs:
-    command: test
-    projects: '**/test/**/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
-
-# Create nuget packages
-- task: DotNetCoreCLI@2
-  displayName: "dotnet pack"
-  inputs:
-    command: 'pack'
-    arguments: '--configuration $(buildConfiguration)'
-    packagesToPack: '/src/**/*.csproj'
-    nobuild: true
-
-# Publish nuget packages
-- task: PublishBuildArtifacts@1
-  displayName: Publish Package Artifacts
-  inputs:
-    PathtoPublish: $(Build.ArtifactStagingDirectory)\Packages
-    artifactName: Packages
+    # Publish nuget packages
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Package Artifacts
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)\Packages
+        artifactName: Packages
