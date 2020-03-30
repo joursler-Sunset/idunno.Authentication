@@ -55,7 +55,13 @@ stages:
       inputs:
         command: test
         projects: '**/test/**/*.csproj'
-        arguments: '--no-build --no-restore --logger trx --configuration $(buildConfiguration) --collect:"Code coverage" -- RunConfiguration.DisableAppDomain=true'
+        arguments: '--no-build --no-restore --configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
+
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage'
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
 
     # Create nuget packages
     - task: DotNetCoreCLI@2
