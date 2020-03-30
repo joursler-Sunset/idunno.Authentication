@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DebugType>Full</DebugType>
+    <DebugType>Portable</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
