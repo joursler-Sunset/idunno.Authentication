@@ -32,8 +32,10 @@ steps:
     packageType: runtime
 
 - task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
 
 - task: NuGetCommand@2
+  displayName: 'nuget restore'
   inputs:
     restoreSolution: '$(solution)'
 
@@ -44,7 +46,7 @@ steps:
     command: build
     projects: | 
       '**/*.csproj'
-      '!samples/**'
+      '!/samples/**/*.csproj'
     arguments: '--configuration Release'
 
 - task: DotNetCoreCLI@2
