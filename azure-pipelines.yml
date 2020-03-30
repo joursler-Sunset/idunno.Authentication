@@ -49,21 +49,7 @@ stages:
         projects: '**/*.csproj'
         arguments: '--configuration Release'
 
-    # Test and publish test results
-    - task: DotNetCoreCLI@2
-      displayName: dotnet test
-      inputs:
-        command: test
-        projects: '**/test/**/*.csproj'
-        arguments: '--no-build --no-restore --configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
-
-    - task: PublishCodeCoverageResults@1
-      displayName: 'Publish code coverage'
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
-
-    # Create nuget packages
+    # Pack deterministic packages
     - task: DotNetCoreCLI@2
       displayName: "dotnet pack"
       inputs:
@@ -72,6 +58,22 @@ stages:
         verbosityPack: minimal
         packagesToPack: '**/src/**/*.csproj'
         nobuild: true
+
+    # Test and publish test results
+    # Have to rebuild because Coverlet doesn't like deterministic builds
+    # See https://github.com/tonerdo/coverlet/issues/363
+    - task: DotNetCoreCLI@2
+      displayName: dotnet test
+      inputs:
+        command: test
+        projects: '**/test/**/*.csproj'
+        arguments: '/p:ContinuousIntegrationBuild=false --configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
+
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage'
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
 
     # Publish packages
     - publish: $(Build.ArtifactStagingDirectory)
