@@ -1,4 +1,4 @@
-  # Build, test and package idunno.Authentication nuget packages
+# Build, test and package idunno.Authentication nuget packages
 
 trigger:
 - master
@@ -18,8 +18,8 @@ stages:
 - stage: Build
   jobs:
   - job: Build
-  pool:
-    vmImage: 'windows-latest'
+    pool:
+      vmImage: 'windows-latest'
 
     steps:
     # Setup Root CA for tests
@@ -44,9 +44,7 @@ stages:
       displayName: dotnet build
       inputs:
         command: build
-      projects: |
-        '**/*.csproj'
-        '!**/samples/**/*.csproj'
+      projects: '**/*.csproj'
       arguments: '--configuration Release'
 
     - task: DotNetCoreCLI@2
