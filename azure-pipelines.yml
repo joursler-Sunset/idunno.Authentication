@@ -16,6 +16,7 @@ steps:
 
 # Setup Root CA for tests
 - task: PowerShell@2
+  displayName: 'Setup Test Certificate Authority'
   inputs:
     filePath: installTestRootCA.ps1
 
