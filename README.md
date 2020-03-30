@@ -1,6 +1,6 @@
 ﻿# idunno.Authentication
 
-[![Build status](https://ci.appveyor.com/api/projects/status/afcip59il6a7axo0?svg=true)](https://ci.appveyor.com/project/blowdart/idunno-authentication)
+[![Build Status](https://dev.azure.com/idunno-org/idunno.Authentication/_apis/build/status/blowdart.idunno.Authentication?branchName=master)](https://dev.azure.com/idunno-org/idunno.Authentication/_build/latest?definitionId=1&branchName=master)
 
 This repository contains a collection of various authentication mechanisms for ASP.NET Core, including
 
