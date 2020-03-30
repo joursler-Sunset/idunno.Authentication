@@ -49,7 +49,7 @@ steps:
   displayName: dotnet test
   inputs:
     command: test
-    projects: '/test/*.csproj'
+    projects: '/test/**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
 # Create nuget packages
@@ -58,7 +58,7 @@ steps:
   inputs:
     command: 'pack'
     arguments: '--configuration $(buildConfiguration)'
-    packagesToPack: '/src/*.csproj'
+    packagesToPack: '/src/**/*.csproj'
     nobuild: true
 
 # Publish nuget packages
