@@ -44,8 +44,8 @@ stages:
       displayName: dotnet build
       inputs:
         command: build
-      projects: '**/*.csproj'
-      arguments: '--configuration Release'
+        projects: '**/*.csproj'
+        arguments: '--configuration Release'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
