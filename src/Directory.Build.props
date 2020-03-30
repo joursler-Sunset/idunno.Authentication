@@ -25,7 +25,6 @@
     <!-- Configure deterministic builds -->
     <!-- See https://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html -->
     <Deterministic>true</Deterministic>
-    <PathMap>$(EnlistmentRoot)=D:\idunno.Authentication</PathMap>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
