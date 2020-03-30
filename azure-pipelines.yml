@@ -59,11 +59,12 @@ stages:
       displayName: "dotnet pack"
       inputs:
         command: 'pack'
-        arguments: '--configuration $(buildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\artifacts'
+        arguments: '--configuration $(buildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
+        verbosityPack: minimal
         packagesToPack: '**/src/**/*.csproj'
         nobuild: true
 
     # Publish packages
-    - publish: $(Build.ArtifactStagingDirectory)\artifacts
+    - publish: $(Build.ArtifactStagingDirectory)
       displayName: Publish artifacts
       artifact: BuildPackages
