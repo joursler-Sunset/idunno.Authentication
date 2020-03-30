@@ -23,7 +23,6 @@ steps:
   displayName: 'Install .NET Core 3.x SDK'
   inputs:
     packageType: 'sdk'
-    useGlobalJson: true
 
 - task: UseDotNet@2
   displayName: 'Install .NET Core 2.x Runtime'
