@@ -2,6 +2,10 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
+    <CIBuild Condition="'$(CIBuild)' == ''">false</CIBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
 
     <PackageProjectUrl>https://github.com/blowdart/idunno.Authentication</PackageProjectUrl>
@@ -15,6 +19,14 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <!-- Configure deterministic builds -->
+    <!-- See https://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html -->
+    <Deterministic>true</Deterministic>
+    <PathMap>$(EnlistmentRoot)=D:\idunno.Authentication</PathMap>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup>
