@@ -7,6 +7,7 @@
 
   <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <PackageProjectUrl>https://github.com/blowdart/idunno.Authentication</PackageProjectUrl>
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
