@@ -33,12 +33,13 @@ stages:
         filePath: installTestRootCA.ps1
 
     - task: UseDotNet@2
-      displayName: 'Install .NET Core 3.x SDK'
+      displayName: 'Install .NET Core 3.1.x SDK'
       inputs:
+        version: '3.1.x'
         packageType: 'sdk'
 
     - task: UseDotNet@2
-      displayName: 'Install .NET Core 2.x Runtime'
+      displayName: 'Install .NET Core 2.2.x Runtime'
       inputs:
         version: '2.2.x'
         packageType: runtime
