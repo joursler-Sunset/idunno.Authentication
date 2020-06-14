@@ -2,10 +2,12 @@
 
 trigger:
 - master
+- dev
 - rel/*
 
 pr:
 - master
+- dev
 - rel/*
 
 variables:

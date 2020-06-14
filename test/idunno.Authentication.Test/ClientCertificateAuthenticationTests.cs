@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -19,11 +21,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 using idunno.Authentication.Certificate;
-using System.IO;
-using System.Linq;
 
 namespace idunno.Authentication.Test
 {
+    [ExcludeFromCodeCoverage]
     public class ClientCertificateAuthenticationTests
     {
         [Fact]

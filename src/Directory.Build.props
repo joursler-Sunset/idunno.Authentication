@@ -6,9 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
     <PackageProjectUrl>https://github.com/blowdart/idunno.Authentication</PackageProjectUrl>
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -22,9 +19,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <!-- If we're running in CI then switch to deterministic builds -->
+  <!-- See https://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html -->
   <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
-    <!-- Configure deterministic builds -->
-    <!-- See https://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html -->
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
@@ -34,10 +31,18 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Source Link -->
+    <!-- See https://github.com/dotnet/sourcelink -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>

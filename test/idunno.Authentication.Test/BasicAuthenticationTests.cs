@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using Microsoft.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -16,14 +18,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 
-using Microsoft.Net.Http.Headers;
-
 using Xunit;
 
 using idunno.Authentication.Basic;
 
 namespace idunno.Authentication.Test
 {
+    [ExcludeFromCodeCoverage]
     public class BasicAuthenticationHandlerTests
     {
         [Fact]
