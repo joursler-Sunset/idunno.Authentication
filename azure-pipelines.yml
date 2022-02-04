@@ -84,7 +84,12 @@ stages:
       artifact: BuildPackages
 
  stage: CodeSign
-  condition: and(succeeded('Build'), eq(variables['Build.SourceBranch'], 'refs/heads/dev'), not(eq(variables['build.reason'], 'PullRequest')))
+  condition: |
+    and(
+      succeeded('Build'),
+      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      not(eq(variables['build.reason'], 'PullRequest'))
+    )
   jobs:
   - job: Sign
     pool:
