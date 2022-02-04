@@ -15,9 +15,9 @@ namespace idunno.Authentication.Certificate
         /// </summary>
         /// <param name="context">The HttpContext the validate context applies too.</param>
         /// <param name="scheme">The scheme used when the Basic Authentication handler was registered.</param>
-        /// <param name="options">The <see cref="BasicAuthenticationOptions"/> for the instance of
-        /// <see cref="BasicAuthenticationMiddleware"/> creating this instance.</param>
-        /// <param name="ticket">Contains the intial values for the identit.</param>
+        /// <param name="options">The <see cref="CertificateAuthenticationOptions"/> for the instance of
+        /// <see cref="CertificateAuthenticationHandler"/> creating this instance.</param>
+        /// <param name="ticket">Contains the initial values for the identity.</param>
         public ValidateCertificateContext(
             HttpContext context,
             AuthenticationScheme scheme,

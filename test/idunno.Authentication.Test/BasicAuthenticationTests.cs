@@ -82,6 +82,7 @@ namespace idunno.Authentication.Test
         {
             var server = CreateServer(new BasicAuthenticationOptions());
             var response = await server.CreateClient().GetAsync("https://example.com/unauthorized");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         [Fact]
@@ -331,12 +332,17 @@ namespace idunno.Authentication.Test
 
         private static TestServer CreateServer(
             BasicAuthenticationOptions configureOptions,
-            Func<HttpContext, bool> handler = null,
+            Func<HttpContext, Func<Task>, Task> handler = null,
             Uri baseAddress = null)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
+                    if (handler != null)
+                    {
+                        app.Use(handler);
+                    }
+
                     app.UseAuthentication();
 
                     app.Use(async (context, next) =>

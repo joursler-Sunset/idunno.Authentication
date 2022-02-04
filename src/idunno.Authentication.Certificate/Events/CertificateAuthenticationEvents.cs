@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 namespace idunno.Authentication.Certificate
 {
     /// <summary>
-    /// This default implementation of the ICertificateAuthenticationEvents may be used if the
-    /// application only needs to override a few of the interface methods.
-    /// This may be used as a base class or may be instantiated directly.
+    /// Events for CertificateAuthentication to allow a developer to customize certificate validation and the response to validation failures.
     /// </summary>
     public class CertificateAuthenticationEvents
     {
@@ -19,7 +17,7 @@ namespace idunno.Authentication.Certificate
         public Func<CertificateAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when a certificate has based basic validation, but where custom validation may be needed.
+        /// A delegate assigned to this property will be invoked when a certificate has passed basic validation, but where custom validation may be needed.
         /// </summary>
         /// <remarks>
         /// You must provide a delegate for this property for authentication to occur.

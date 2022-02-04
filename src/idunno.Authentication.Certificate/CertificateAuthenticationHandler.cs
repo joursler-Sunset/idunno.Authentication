@@ -48,6 +48,7 @@ namespace idunno.Authentication.Certificate
             // You only get client certificates over HTTPS
             if (!Context.Request.IsHttps)
             {
+                Logger.LogInformation("Request protocol is HTTP, no client certificate available.");
                 return AuthenticateResult.NoResult();
             }
 

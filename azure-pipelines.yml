@@ -1,12 +1,10 @@
 # Build, test and package idunno.Authentication nuget packages
 
 trigger:
-- master
 - dev
 - rel/*
 
 pr:
-- master
 - dev
 - rel/*
 
@@ -26,23 +24,38 @@ stages:
       vmImage: 'windows-latest'
 
     steps:
-    # Setup Root CA for tests
-    - task: PowerShell@2
-      displayName: 'Setup Test Certificate Authority'
+    # .NET 6
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core 6.0.x SDK'
       inputs:
-        filePath: installTestRootCA.ps1
+        version: '6.0.x'
+        packageType: 'sdk'
 
+    # NetCoreApp 3.0 & 3.1 Support
     - task: UseDotNet@2
       displayName: 'Install .NET Core 3.1.x SDK'
       inputs:
         version: '3.1.x'
         packageType: 'sdk'
 
+    # NetStandard 2.0 Support
     - task: UseDotNet@2
-      displayName: 'Install .NET Core 2.2.x Runtime'
+      displayName: 'Install .NET Core 2.1.x runtime'
       inputs:
-        version: '2.2.x'
-        packageType: runtime
+        version: '2.1.x'
+        packageType: 'runtime'
+
+    # Install nerdbank versioning tool
+    # https://github.com/dotnet/Nerdbank.GitVersioning/blob/master/doc/nbgv-cli.md
+    - task: DotNetCoreCLI@2
+      displayName: Install NBGV tool
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install --tool-path . nbgv
+
+    - script: dotnet nbgv cloud
+      displayName: Set Version
 
     # Build
     - task: DotNetCoreCLI@2
@@ -60,17 +73,27 @@ stages:
         projects: '**/test/**/*.csproj'
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
 
-    # Pack deterministic packages
-    - task: DotNetCoreCLI@2
-      displayName: "dotnet pack"
-      inputs:
-        command: 'pack'
-        arguments: '--configuration $(buildConfiguration) /p:IncludeSymbols=true /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
-        verbosityPack: minimal
-        packagesToPack: '**/src/**/*.csproj'
-        nobuild: true
+    - task: NuGetToolInstaller@1
+
+    - script: dotnet pack dirs.proj
+      displayName: Create package(s)
 
     # Publish packages
-    - publish: $(Build.ArtifactStagingDirectory)
+    - publish: $(Build.ArtifactStagingDirectory)\Packages
       displayName: Publish artifacts
       artifact: BuildPackages
+
+  stage: CodeSign
+  condition: and(succeeded('Build'), not(variables['Build.SourceBranch'], 'refs/heads/dev'), not(eq(variables['build.reason'], 'PullRequest')))
+  jobs:
+  - job: Sign
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Install AzureCodeSign tool
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install --tool-path . azuresigntool

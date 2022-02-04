@@ -6,7 +6,7 @@ using System;
 namespace idunno.Authentication.Certificate
 {
     [Flags]
-    public enum CertificateTypes 
+    public enum CertificateTypes
     {
         Chained = 1,
         SelfSigned = 2,

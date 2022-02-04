@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 using idunno.Authentication.Basic;
+using Microsoft.Extensions.Hosting;
 
 namespace idunno.Authentication.Demo
 {
@@ -54,22 +55,29 @@ namespace idunno.Authentication.Demo
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseAuthentication();
-
-            app.UseStatusCodePages();
-
-            app.UseMvc(routes =>
+            else
             {
-                routes.MapRoute(
-                     name: "default",
-                     template: "{controller=Home}/{action=Index}/{id?}");
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorPages();
             });
         }
     }
