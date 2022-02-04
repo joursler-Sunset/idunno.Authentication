@@ -52,10 +52,10 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install --tool-path . nbgv
+        arguments: install --tool-path tooling nbgv
 
-    - script: dotnet nbgv cloud
-      displayName: Set Version
+    - script: tooling\nbgv cloud
+      displayName: Build Version Properties
 
     # Build
     - task: DotNetCoreCLI@2
@@ -101,4 +101,4 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install --tool-path . azuresigntool
+        arguments: install --tool-path tooling azuresigntool
