@@ -73,10 +73,16 @@ stages:
         projects: '**/test/**/*.csproj'
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
 
-    - task: NuGetToolInstaller@1
+    # Produce packages
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet pack"
+      inputs:
+        command: 'pack'
+        arguments: '--configuration $(buildConfiguration) /p:IncludeSymbols=true /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
+        verbosityPack: minimal
+        packagesToPack: '**/src/**/*.csproj'
+        nobuild: true
 
-    - script: dotnet pack dirs.proj
-      displayName: Create package(s)
 
     # Publish packages
     - publish: $(Build.ArtifactStagingDirectory)\Packages
