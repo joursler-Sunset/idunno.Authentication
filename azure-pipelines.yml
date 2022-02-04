@@ -78,7 +78,9 @@ stages:
       displayName: "dotnet pack"
       inputs:
         command: 'pack'
-        arguments: '--configuration $(buildConfiguration) /p:IncludeSymbols=true /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Packages'
+        outputDir: '$(Build.ArtifactStagingDirectory)/Packages'
+        configuration: $(buildConfiguration)
+        arguments: '/p:IncludeSymbols=true'
         verbosityPack: minimal
         packagesToPack: '**/src/**/*.csproj'
         nobuild: true
