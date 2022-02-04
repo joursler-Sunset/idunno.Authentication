@@ -83,7 +83,7 @@ stages:
       displayName: Publish artifacts
       artifact: BuildPackages
 
-  stage: CodeSign
+ stage: CodeSign
   condition: and(succeeded('Build'), not(variables['Build.SourceBranch'], 'refs/heads/dev'), not(eq(variables['build.reason'], 'PullRequest')))
   jobs:
   - job: Sign
