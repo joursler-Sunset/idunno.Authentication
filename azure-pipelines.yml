@@ -97,7 +97,7 @@ stages:
     and(
       succeeded('Build'),
       startsWith(variables['Build.sourceBranch'], 'refs/heads/dev')
-      not(eq(variables['build.reason'], 'PullRequest'))
+      and not(eq(variables['build.reason'], 'PullRequest'))
     )
   jobs:
   - deployment: CodeSign
