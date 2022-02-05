@@ -119,8 +119,10 @@ stages:
               arguments: install --tool-path tooling azuresigntool
 
           - task: PowerShell@2
-            script: |
-              Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
-              Foreach-Object {
-                Write-Host $_.Name
-              }
+            inputs:
+              displayName: Gather build output
+              script: |
+                Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
+                Foreach-Object {
+                  Write-Host $_.Name
+                }
