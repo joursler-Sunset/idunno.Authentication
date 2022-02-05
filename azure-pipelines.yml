@@ -100,24 +100,27 @@ stages:
       not(eq(variables['build.reason'], 'PullRequest'))
     )
   jobs:
-  - job: Sign
+  - deployment: CodeSign
+    displayName: Code Signing
     pool:
       vmImage: 'windows-latest'
     environment: Signing Isolation
     variables:
     - group: Signing Credentials
+   strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DotNetCoreCLI@2
+            displayName: Install AzureCodeSign tool
+            inputs:
+              command: custom
+              custom: tool
+              arguments: install --tool-path tooling azuresigntool
 
-    steps:
-    - task: DotNetCoreCLI@2
-      displayName: Install AzureCodeSign tool
-      inputs:
-        command: custom
-        custom: tool
-        arguments: install --tool-path tooling azuresigntool
-
-    - task: PowerShell@2
-      script: |
-         Get-ChildItem -Path ".\artifacts\*.nupkg" |
-         Foreach-Object {
-           Write-Host $_.Name
-         }
+          - task: PowerShell@2
+            script: |
+              Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
+              Foreach-Object {
+                Write-Host $_.Name
+              }
