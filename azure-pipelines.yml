@@ -92,16 +92,20 @@ stages:
       artifact: BuildPackages
 
 - stage: CodeSign
+  dependsOn: Build
   condition: |
     and(
       succeeded('Build'),
-      eq(variables['Build.SourceBranch'], 'refs/heads/dev'),
+      startsWith(variables['Build.sourceBranch'], 'refs/heads/dev')
       not(eq(variables['build.reason'], 'PullRequest'))
     )
   jobs:
   - job: Sign
     pool:
       vmImage: 'windows-latest'
+    environment: Signing Isolation
+    variables:
+    - group: Signing Credentials
 
     steps:
     - task: DotNetCoreCLI@2
@@ -110,3 +114,10 @@ stages:
         command: custom
         custom: tool
         arguments: install --tool-path tooling azuresigntool
+
+    - task: PowerShell@2
+      script: |
+         Get-ChildItem -Path ".\artifacts\*.nupkg" |
+         Foreach-Object {
+           Write-Host $_.Name
+         }
