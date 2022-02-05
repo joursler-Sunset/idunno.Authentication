@@ -121,6 +121,7 @@ stages:
           - task: PowerShell@2
             inputs:
               displayName: Gather build output
+              targetType: Inline
               script: |
                 Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
                 Foreach-Object {
