@@ -73,7 +73,7 @@ stages:
         projects: '**/test/**/*.csproj'
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
 
-    # Produce packages
+    # Produce unsigned packages
     - task: DotNetCoreCLI@2
       displayName: "dotnet pack"
       inputs:
@@ -85,8 +85,7 @@ stages:
         packagesToPack: '**/src/**/*.csproj'
         nobuild: true
 
-
-    # Publish packages
+    # Publish unsigned packages
     - publish: $(Build.ArtifactStagingDirectory)\Packages
       displayName: Publish artifacts
       artifact: BuildPackages
@@ -111,6 +110,8 @@ stages:
       runOnce:
         deploy:
           steps:
+          # Install azuresigntool
+          # https://github.com/vcsjones/AzureSignTool
           - task: DotNetCoreCLI@2
             displayName: Install AzureCodeSign tool
             inputs:
@@ -119,11 +120,18 @@ stages:
               arguments: install --tool-path tooling azuresigntool
 
           - task: PowerShell@2
+            env:
+              SigningUrl: $(SigningURL)
+              SigningCertificate: $(SigningURL)
+              SigningClientId: $(SigningClientId)
+              SigningClientSecret: $(SigningClientSecret)
+              SigningVaultUrl: $(SigningVaultURL)
             inputs:
-              displayName: Gather build output
+              displayName: Sign build output
               targetType: Inline
               script: |
+                Write-Host "Signing for $Env:SigningUrl"
                 Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
                 Foreach-Object {
-                  Write-Host $_.Name
+                  Write-Host $_.FullName
                 }
