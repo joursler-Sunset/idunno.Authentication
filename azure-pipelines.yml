@@ -103,11 +103,11 @@ stages:
   - deployment: CodeSign
     displayName: Code Signing
     pool:
-      vmImage: 'windows-latest'
+      vmImage: windows-latest
     environment: Signing Isolation
     variables:
     - group: Signing Credentials
-   strategy:
+    strategy:
       runOnce:
         deploy:
           steps:
