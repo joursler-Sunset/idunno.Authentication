@@ -110,6 +110,9 @@ stages:
       runOnce:
         deploy:
           steps:
+          # Install nuget tool
+          - task: NuGetToolInstaller@1
+
           # Install azuresigntool
           # https://github.com/vcsjones/AzureSignTool
           - task: DotNetCoreCLI@2
@@ -120,18 +123,104 @@ stages:
               arguments: install --tool-path tooling azuresigntool
 
           - task: PowerShell@2
+            inputs:
+              # We need to extract the assemblies we built in the build stage from
+              # the build output nupkgs to authenticode sign them
+              displayName: Expand build output nupkgs
+              targetType: inline
+              script : |
+                 Get-ChildItem $(Pipeline.Workspace)\BuildPackages\*.nupkg | Rename-Item -NewName {$_.name -Replace '\.nupkg$', '.zip' }
+                 Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.zip" |
+                 Foreach-Object {
+                    Write-Host "Expanding" $_.FullName
+                    Expand-Archive $_.FullName -DestinationPath $_.FullName.replace('.zip', '')
+                 }
+
+          - task: PowerShell@2
             env:
               SigningUrl: $(SigningURL)
-              SigningCertificate: $(SigningURL)
+              SigningCertificate: $(SigningCertName)
               SigningClientId: $(SigningClientId)
               SigningClientSecret: $(SigningClientSecret)
               SigningVaultUrl: $(SigningVaultURL)
+              TenantId: $(AzureTenantId)
             inputs:
-              displayName: Sign build output
-              targetType: Inline
+              # Build a file list of extracted assemblies to sign
+              # As we know everything in build artificats is ours and not already signed
+              # We can just build a simple list of assemblies
+              displayName: Sign assemblies extracted from nupkgs
+              targetType: inline
               script: |
                 Write-Host "Signing for $Env:SigningUrl"
-                Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.nupkg" |
+                $fileList = @()
+                Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.dll" -Recurse |
                 Foreach-Object {
-                  Write-Host $_.FullName
+                  $fileList += $_.FullName
                 }
+                $filesForSigning = $filelist -join "`n"
+                Write-Host "Files for signing:"
+                Write-Host $filesForSigning
+
+                $filesForSigning | Out-File -FilePath .\fileList.txt
+
+                .\tooling\azuresigntool.exe sign \
+                -du "$Env:SigningUrl" \
+                -fd sha512 \
+                -tr http://timestamp.digicert.com \
+                -td sha384 \
+                -kvu $Env:SigningVaultUrl \
+                -kvt $Env:TenantId
+                -kvi $Env:SigningClientId \
+                -kvs $Env:SigningClientSecret \
+                -kvc $Env:SigningCertificate \
+                -v
+                -ifl .\FileList.txt
+
+                Remove-Item .\fileList.txt
+
+          - task: PowerShell@2
+            inputs:
+              displayName: Reassemble nupkgs
+              targetType: inline
+              script : |
+                 # We can't use compress archive because it puts everything into a subfolder matching the source directory name
+                 # so we must use the .NET compression classes instead.
+                 Add-Type -AssemblyName "system.io.compression.filesystem"
+                 Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.zip" |
+                 Foreach-Object {
+                     Write-Host "Rebuilding " $_.FullName.replace('.zip', '')
+                     [io.compression.zipfile]::CreateFromDirectory($_.FullName.replace('.zip', ''), $_.FullName.replace('.zip', '.nupkg'))
+                     Remove-Item $_.FullName.replace('.zip', '') -Recurse
+                     Remove-Item $_.FullName
+                 }
+
+         # Install azuresigntool
+          # https://github.com/novotnyllc/NuGetKeyVaultSignTool
+          - task: DotNetCoreCLI@2
+            displayName: Install NuGetKeyVaultSignTool tool
+            inputs:
+              command: custom
+              custom: tool
+              arguments: install --tool-path tooling NuGetKeyVaultSignTool
+
+          - task: PowerShell@2
+            env:
+              SigningUrl: $(SigningURL)
+              SigningCertificate: $(SigningCertName)
+              SigningClientId: $(SigningClientId)
+              SigningClientSecret: $(SigningClientSecret)
+              SigningVaultUrl: $(SigningVaultURL)
+              TenantId: $(AzureTenantId)
+            inputs:
+              displayName: Sign nupkgs
+              targetType: inline
+              script: |
+                .\tooling\NuGetKeyVaultSignTool.exe sign $(Pipeline.Workspace)/BuildPackages/**/*.nupkg `
+                --file-digest "sha256" `
+                --timestamp-rfc3161 "http://timestamp.digicert.com" `
+                --timestamp-digest "sha256" `
+                --azure-key-vault-url "$Env:SigningVaultUrl" `
+                --azure-key-vault-tenant-id "$Env:TenantId" `
+                --azure-key-vault-client-id "$Env:SigningClientId"  `
+                --azure-key-vault-client-secret "$Env:SigningClientSecret" `
+                --azure-key-vault-certificate "$Env:SigningCertificate"
