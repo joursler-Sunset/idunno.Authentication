@@ -163,17 +163,17 @@ stages:
 
                 $filesForSigning | Out-File -FilePath .\fileList.txt
 
-                .\tooling\azuresigntool.exe sign \
-                -du "$Env:SigningUrl" \
-                -fd sha512 \
-                -tr http://timestamp.digicert.com \
-                -td sha384 \
-                -kvu $Env:SigningVaultUrl \
-                -kvt $Env:TenantId
-                -kvi $Env:SigningClientId \
-                -kvs $Env:SigningClientSecret \
-                -kvc $Env:SigningCertificate \
-                -v
+                .\tooling\azuresigntool.exe sign `
+                -du "$Env:SigningUrl" `
+                -fd sha512 `
+                -tr http://timestamp.digicert.com `
+                -td sha384 `
+                -kvu $Env:SigningVaultUrl `
+                -kvt $Env:TenantId `
+                -kvi $Env:SigningClientId `
+                -kvs $Env:SigningClientSecret `
+                -kvc $Env:SigningCertificate `
+                -v `
                 -ifl .\FileList.txt
 
                 Remove-Item .\fileList.txt
