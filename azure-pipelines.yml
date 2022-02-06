@@ -123,10 +123,10 @@ stages:
               arguments: install --tool-path tooling azuresigntool
 
           - task: PowerShell@2
+            displayName: Expand build output nupkgs
             inputs:
               # We need to extract the assemblies we built in the build stage from
               # the build output nupkgs to authenticode sign them
-              displayName: Expand build output nupkgs
               targetType: inline
               script : |
                  Get-ChildItem $(Pipeline.Workspace)\BuildPackages\*.nupkg | Rename-Item -NewName {$_.name -Replace '\.nupkg$', '.zip' }
@@ -137,6 +137,7 @@ stages:
                  }
 
           - task: PowerShell@2
+            displayName: Sign assemblies extracted from nupkgs
             env:
               SigningUrl: $(SigningURL)
               SigningCertificate: $(SigningCertName)
@@ -148,7 +149,6 @@ stages:
               # Build a file list of extracted assemblies to sign
               # As we know everything in build artificats is ours and not already signed
               # We can just build a simple list of assemblies
-              displayName: Sign assemblies extracted from nupkgs
               targetType: inline
               script: |
                 Write-Host "Signing for $Env:SigningUrl"
@@ -179,8 +179,8 @@ stages:
                 Remove-Item .\fileList.txt
 
           - task: PowerShell@2
+            displayName: Reassemble nupkgs
             inputs:
-              displayName: Reassemble nupkgs
               targetType: inline
               script : |
                  # We can't use compress archive because it puts everything into a subfolder matching the source directory name
@@ -224,3 +224,8 @@ stages:
                 --azure-key-vault-client-id "$Env:SigningClientId"  `
                 --azure-key-vault-client-secret "$Env:SigningClientSecret" `
                 --azure-key-vault-certificate "$Env:SigningCertificate"
+
+          # Publish unsigned packages
+          - publish: $(Build.ArtifactStagingDirectory)\Packages
+            displayName: Publish signed artifacts
+            artifact: BuildPackages
