@@ -204,6 +204,7 @@ stages:
               arguments: install --tool-path tooling NuGetKeyVaultSignTool
 
           - task: PowerShell@2
+            displayName: Sign nupkgs
             env:
               SigningUrl: $(SigningURL)
               SigningCertificate: $(SigningCertName)
@@ -212,7 +213,6 @@ stages:
               SigningVaultUrl: $(SigningVaultURL)
               TenantId: $(AzureTenantId)
             inputs:
-              displayName: Sign nupkgs
               targetType: inline
               script: |
                 .\tooling\NuGetKeyVaultSignTool.exe sign $(Pipeline.Workspace)/BuildPackages/**/*.nupkg `
@@ -226,6 +226,6 @@ stages:
                 --azure-key-vault-certificate "$Env:SigningCertificate"
 
           # Publish unsigned packages
-          - publish: $(Build.ArtifactStagingDirectory)\Packages
+          - publish: $(Pipeline.Workspace)\BuildPackages
             displayName: Publish signed artifacts
             artifact: BuildPackages
