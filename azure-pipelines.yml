@@ -228,4 +228,4 @@ stages:
           # Publish unsigned packages
           - publish: $(Pipeline.Workspace)\BuildPackages
             displayName: Publish signed artifacts
-            artifact: BuildPackages
+            artifact: SignedPackages
