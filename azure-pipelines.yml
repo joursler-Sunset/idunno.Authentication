@@ -63,7 +63,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release'
+        arguments: '--configuration $(buildConfiguration)'
 
     # Disable code coverage for now
     - task: DotNetCoreCLI@2
@@ -133,7 +133,13 @@ stages:
                  Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.zip" |
                  Foreach-Object {
                     Write-Host "Expanding" $_.FullName
-                    Expand-Archive $_.FullName -DestinationPath $_.FullName.replace('.zip', '')
+                    $DestinationDirectory =  $_.FullName.replace('.zip', '')
+                    Expand-Archive $_.FullName -DestinationPath $DestinationDirectory
+                    # Delete the things that will be recreated by the nuget pack command
+                    Remove-Item -Recurse -Force "$DestinationDirectory\_rels"
+                    Remove-Item -Recurse -Force "$DestinationDirectory\package"
+                    # To remove [Content-Types].xml we have to get creative, as [ and ] are pattern matching characters
+                    Get-ChildItem $DestinationDirectory | Where-Object Name -Like '`[Content_Types`].xml' | ForEach-Object { Remove-Item -LiteralPath $_.FullName }
                  }
 
           - task: PowerShell@2
@@ -146,14 +152,12 @@ stages:
               SigningVaultUrl: $(SigningVaultURL)
               TenantId: $(AzureTenantId)
             inputs:
-              # Build a file list of extracted assemblies to sign
-              # As we know everything in build artificats is ours and not already signed
-              # We can just build a simple list of assemblies
+              # Build a file list of extracted assemblies to sign that we know are ours.
               targetType: inline
               script: |
                 Write-Host "Signing for $Env:SigningUrl"
                 $fileList = @()
-                Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.dll" -Recurse |
+                Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\idunno.Authentication.*.dll" -Recurse |
                 Foreach-Object {
                   $fileList += $_.FullName
                 }
@@ -179,17 +183,13 @@ stages:
                 Remove-Item .\fileList.txt
 
           - task: PowerShell@2
-            displayName: Reassemble nupkgs
+            displayName: Repack nupkgs
             inputs:
               targetType: inline
               script : |
-                 # We can't use compress archive because it puts everything into a subfolder matching the source directory name
-                 # so we must use the .NET compression classes instead.
-                 Add-Type -AssemblyName "system.io.compression.filesystem"
                  Get-ChildItem -Path "$(Pipeline.Workspace)\BuildPackages\*.zip" |
                  Foreach-Object {
-                     Write-Host "Rebuilding " $_.FullName.replace('.zip', '')
-                     [io.compression.zipfile]::CreateFromDirectory($_.FullName.replace('.zip', ''), $_.FullName.replace('.zip', '.nupkg'))
+                     nuget pack $_.FullName.replace('.zip', '') -OutputDirectory $(Pipeline.Workspace)\BuildPackages
                      Remove-Item $_.FullName.replace('.zip', '') -Recurse
                      Remove-Item $_.FullName
                  }
