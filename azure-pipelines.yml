@@ -95,7 +95,7 @@ stages:
   condition: |
     and(
       succeeded('Build'),
-      startsWith(variables['Build.sourceBranch'], 'refs/heads/dev'),
+      startsWith(variables['Build.sourceBranch'], 'refs/heads/rel'),
       not(eq(variables['build.reason'], 'PullRequest'))
     )
   jobs:
