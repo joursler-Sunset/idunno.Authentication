@@ -72,14 +72,14 @@ stages:
       inputs:
         command: test
         projects: '**/test/**/*.csproj'
-        arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" --results-directory $(build.artifactstagingdirectory)/TestResults/ -- RunConfiguration.DisableAppDomain=true'
+        arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" --results-directory $(Build.SourcesDirectory)/TestResults/ -- RunConfiguration.DisableAppDomain=true'
 
     # Generate code coverage report
     # https://danielpalme.github.io/ReportGenerator/
     - task: reportgenerator@5
       displayName: Generate Code Coverage Report
       inputs:
-        reports: '**/test/**/coverage.cobertura.xml'
+        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
         targetdir: $(build.artifactstagingdirectory)/TestResults/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
 
