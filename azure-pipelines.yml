@@ -243,7 +243,7 @@ stages:
                 --azure-key-vault-client-secret "$Env:SigningClientSecret" `
                 --azure-key-vault-certificate "$Env:SigningCertificate"
 
-          # Publish unsigned packages
+          # Publish signed packages
           - publish: $(Pipeline.Workspace)\BuildPackages
             displayName: Publish signed artifacts
             artifact: SignedPackages
