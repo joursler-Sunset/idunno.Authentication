@@ -15,6 +15,7 @@ variables:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  disable.coverage.autogenerate: 'true'
 
 stages:
 - stage: Build
@@ -65,13 +66,21 @@ stages:
         projects: '**/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
 
-    # Disable code coverage for now
+    # Run tests
     - task: DotNetCoreCLI@2
       displayName: dotnet test
       inputs:
         command: test
         projects: '**/test/**/*.csproj'
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
+
+    # Generate code coverage report
+    - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+      displayName: Generate Code Coverage Report
+      inputs:
+        reports: $(Build.SourcesDirectory)/tests/**/coverage.cobertura.xml
+        targetdir: $(build.artifactstagingdirectory)/TestResults/
+        reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
 
     # Produce unsigned packages
     - task: DotNetCoreCLI@2
@@ -89,6 +98,14 @@ stages:
     - publish: $(Build.ArtifactStagingDirectory)\Packages
       displayName: Publish artifacts
       artifact: BuildPackages
+
+    # Publish Code Coverage results
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish Code Coverage Results'
+      inputs:
+        codeCoverageTool: cobertura
+        summaryFileLocation: $(build.artifactstagingdirectory)/TestResults/cobertura.xml
+        reportDirectory: '$(build.artifactstagingdirectory)/TestResults'
 
 - stage: CodeSign
   dependsOn: Build
@@ -194,7 +211,7 @@ stages:
                      Remove-Item $_.FullName
                  }
 
-         # Install azuresigntool
+          # Install nugetkeyvaultsigntool
           # https://github.com/novotnyllc/NuGetKeyVaultSignTool
           - task: DotNetCoreCLI@2
             displayName: Install NuGetKeyVaultSignTool tool
