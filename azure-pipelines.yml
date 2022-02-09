@@ -75,10 +75,11 @@ stages:
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true'
 
     # Generate code coverage report
-    - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
+    # https://danielpalme.github.io/ReportGenerator/
+    - task: reportgenerator@5
       displayName: Generate Code Coverage Report
       inputs:
-        reports: $(Build.SourcesDirectory)/tests/**/coverage.cobertura.xml
+        reports: '**/test/**/coverage.cobertura.xml'
         targetdir: $(build.artifactstagingdirectory)/TestResults/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
 
