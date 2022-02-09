@@ -79,8 +79,8 @@ stages:
     - task: reportgenerator@5
       displayName: Generate Code Coverage Report
       inputs:
-        reports: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
-        targetdir: $(build.artifactstagingdirectory)/TestResults/
+        reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+        targetdir: $(build.artifactstagingdirectory)/coverageReports/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
 
     # Produce unsigned packages
@@ -105,8 +105,8 @@ stages:
       displayName: 'Publish Code Coverage Results'
       inputs:
         codeCoverageTool: cobertura
-        summaryFileLocation: $(build.artifactstagingdirectory)/TestResults/cobertura.xml
-        reportDirectory: '$(build.artifactstagingdirectory)/TestResults'
+        summaryFileLocation: $(build.artifactstagingdirectory)/coverageReports/cobertura.xml
+        reportDirectory: '$(build.artifactstagingdirectory)/coverageReports/'
 
 - stage: CodeSign
   dependsOn: Build
