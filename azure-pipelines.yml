@@ -250,22 +250,6 @@ stages:
             displayName: Publish signed artifacts
             artifact: SignedPackages
 
-- stage: Build
-  displayName: Build, test and package
-  jobs:
-  - job: Build
-    pool:
-      vmImage: 'windows-latest'
-
-    steps:
-    # .NET 6
-    - task: UseDotNet@2
-      displayName: 'Install .NET Core 6.0.x SDK'
-      inputs:
-        version: '6.0.x'
-        packageType: 'sdk'
-
-
 - stage: Push_Packages
   displayName: Push packages to nuget or development feeds
   dependsOn: Build
@@ -278,7 +262,6 @@ stages:
         not(startsWith(variables['Build.sourceBranch'], 'refs/heads/rel')),
         not(eq(variables['build.reason'], 'PullRequest'))
       )
-    dependsOn: Build
     pool:
       vmImage: 'windows-latest'
 
