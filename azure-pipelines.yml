@@ -283,6 +283,6 @@ stages:
       displayName: 'NuGet push'
       inputs:
         command: push
-        packagesToPush: '$(Pipeline.Workspace)/BuildPackages/**/*.nupkg'
+        packagesToPush: '$(Pipeline.Workspace)\BuildPackages\*.nupkg'
         publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
         allowPackageConflicts: false
