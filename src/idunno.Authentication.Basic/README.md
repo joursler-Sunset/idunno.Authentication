@@ -1,6 +1,6 @@
 ﻿# idunno.Authentication.Basic
 
-This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET Core. 
+This project contains an implementation of [Basic Authentication](https://tools.ietf.org/html/rfc1945#section-11) for ASP.NET. 
 
 It started as a demonstration of how to write authentication middleware and **not** as something you would seriously consider using, but enough of
 you want to go with the world's worse authentication standard, so here we are. *You* are responsible for hardening it.
@@ -70,6 +70,45 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 
     // All the other app configuration.
 }
+```
+
+For .NET 6 minimal templates
+
+```c#
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+    .AddBasic(options =>
+    {
+        options.Realm = "Basic Authentication";
+        options.Events = new BasicAuthenticationEvents
+        {
+            OnValidateCredentials = context =>
+            {
+                if (context.Username == context.Password)
+                {
+                    var claims = new[]
+                    {
+                                    new Claim(ClaimTypes.NameIdentifier, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                                    new Claim(ClaimTypes.Name, context.Username, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                                };
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                    context.Success();
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+builder.Services.AddAuthorization();
+```
+
+and then, before calls to any app.Map functions
+
+```c#
+app.UseAuthentication();
+app.UseAuthorization();
 ```
 
 In the sample you can see that the delegate checks if the user name and password are identical. If they
@@ -158,7 +197,7 @@ No nuget packages are available for older versions of ASP.NET Core.
 
 Basic Authentication sends credentials unencrypted. You should only use it over [HTTPS](https://en.wikipedia.org/wiki/HTTPS). 
 
-It may also have performance impacts, credentials are sent and validated with every request. As you should not be storing passwords in clear text your validation procedure will have to hash and compare values
+It may also have performance impacts as credentials are sent and validated with every request. As you should not be storing passwords in clear text your validation procedure will have to hash and compare values
 with every request, or cache results of previous hashes (which could lead to data leakage). 
 
 Remember that hash comparisons should be time consistent to avoid [timing attacks](https://en.wikipedia.org/wiki/Timing_attack).
