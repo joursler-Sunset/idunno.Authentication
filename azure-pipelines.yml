@@ -18,7 +18,7 @@ variables:
   disable.coverage.autogenerate: 'true'
   isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')] 
   isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')] 
-  isPullRequest: $[eq(variables['build.reason'], 'PullRequest')]
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 stages:
 - stage: Build
@@ -262,8 +262,8 @@ stages:
     displayName: Push unsigned packages to Azure Artifacts
     condition: |
       and(
-        variables['isDevBranch'],
-        not(variables['isPullRequest'])
+        eq(variables['isDevBranch'], 'true'),
+        eq(variables['isPullRequest'], 'false')
       )
     pool:
       vmImage: 'windows-latest'
