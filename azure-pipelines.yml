@@ -33,7 +33,7 @@ stages:
         version: '6.0.x'
         packageType: 'sdk'
 
-    # NetCoreApp 3.0 & 3.1 Support for Certificate Auth
+    # NetCoreApp 3.0 & 3.1 Support
     - task: UseDotNet@2
       displayName: 'Install .NET Core 3.1.x SDK'
       inputs:
@@ -253,12 +253,12 @@ stages:
 - stage: Push_Packages
   displayName: Push packages to nuget or development feeds
   dependsOn: Build
+  condition: succeeded()
   jobs:
   - job: PushUnsigned
     displayName: Push unsigned packages to Azure Artifacts
     condition: |
       and(
-        succeeded('Build'),
         not(startsWith(variables['Build.sourceBranch'], 'refs/heads/rel')),
         not(eq(variables['build.reason'], 'PullRequest'))
       )
