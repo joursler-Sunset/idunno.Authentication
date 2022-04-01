@@ -16,6 +16,9 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   disable.coverage.autogenerate: 'true'
+  isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')] 
+  isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')] 
+  isPullRequest: $[eq(variables['build.reason'], 'PullRequest')]
 
 stages:
 - stage: Build
@@ -259,8 +262,8 @@ stages:
     displayName: Push unsigned packages to Azure Artifacts
     condition: |
       and(
-        not(startsWith(variables['Build.sourceBranch'], 'refs/heads/rel')),
-        not(eq(variables['build.reason'], 'PullRequest'))
+        variables['isDevBranch'],
+        not(variables['isPullRequest'])
       )
     pool:
       vmImage: 'windows-latest'
@@ -280,5 +283,6 @@ stages:
       displayName: 'NuGet push'
       inputs:
         command: push
+        packagesToPush: '$(Pipeline.Workspace)/BuildPackages/**/*.nupkg'
         publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
         allowPackageConflicts: false
