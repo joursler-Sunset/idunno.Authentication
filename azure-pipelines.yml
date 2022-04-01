@@ -33,14 +33,14 @@ stages:
         version: '6.0.x'
         packageType: 'sdk'
 
-    # NetCoreApp 3.0 & 3.1 Support
+    # NetCoreApp 3.0 & 3.1 Support for Certificate Auth
     - task: UseDotNet@2
       displayName: 'Install .NET Core 3.1.x SDK'
       inputs:
         version: '3.1.x'
         packageType: 'sdk'
 
-    # NetStandard 2.0 Support
+    # NetStandard 2.0 Support for Basic Auth
     - task: UseDotNet@2
       displayName: 'Install .NET Core 2.1.x runtime'
       inputs:
