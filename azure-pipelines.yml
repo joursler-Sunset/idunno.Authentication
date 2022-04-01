@@ -19,6 +19,7 @@ variables:
 
 stages:
 - stage: Build
+  displayName: Build, test and package
   jobs:
   - job: Build
     pool:
@@ -109,6 +110,7 @@ stages:
         reportDirectory: '$(build.artifactstagingdirectory)/coverageReports/'
 
 - stage: CodeSign
+  displayName: Codesign release assemblies and packages
   dependsOn: Build
   condition: |
     and(
@@ -248,7 +250,8 @@ stages:
             displayName: Publish signed artifacts
             artifact: SignedPackages
 
-- stage: Release Development Packages
+- stage: Push_Dev_Feed
+  displayName: Push development packages to VSTS feed
   dependsOn: Build
   condition: |
     and(
