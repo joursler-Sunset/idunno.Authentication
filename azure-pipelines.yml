@@ -119,7 +119,7 @@ stages:
       displayName: 'Push unsigned packages to Artifacts feed'
       inputs:
         command: push
-        packagesToPush: '$(Pipeline.Workspace)/BuildPackages/**/*.nupkg'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/Packages/*.nupkg'
         publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
         allowPackageConflicts: false
 
