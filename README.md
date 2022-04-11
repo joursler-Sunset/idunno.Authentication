@@ -29,6 +29,8 @@ nuget packages are available.
 | SharedKey           | https://www.nuget.org/packages/idunno.Authentication.SharedKey/    |
 | Certificate         | https://www.nuget.org/packages/idunno.Authentication.Certificate/  |
 
+Azure Artifacts holds a [feed of current dev builds](https://dev.azure.com/idunno-org/idunno.Authentication/_artifacts/feed/idunno.Authentication.Builds).
+
 ## Version History
 
 | Version | Notes |
@@ -41,19 +43,6 @@ nuget packages are available.
 |2.1.1    | Added [SourceLink](https://github.com/dotnet/sourcelink/blob/master/README.md)<br>Changed library dependencies to remove demands for exact versions, following the [.NET Core open-source library guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/)<br>nuget package is now signed
 |2.1.0    | Added Certificate Authentication<br>Fixed Basic Authentication event handling<br>Packages are now Authenticode signed |
 
-
-## What about older versions of ASP.NET Core?
-
-Shared key authentication does not support ASP.NET Core 1.x or ASP.NET 2.x targetting .NET Framework.
-
-Certificate Authentication is only available for ASP.NET Core 2.0. If you are using ASP.NET Core 3.1 or later please use the [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
-
-Older versions of Basic Authentication are available in the appropriate branch. No nuget packages are available for ASP.NET Core 1.x.
-
-| ASP.NET Core MVC Version | Branch                                                                        |
-|--------------------------|-------------------------------------------------------------------------------|
-| 1.1                      | [rel/1.1.1](https://github.com/blowdart/idunno.Authentication/tree/rel/1.1.1) |
-| 1.0                      | [rel/1.0.0](https://github.com/blowdart/idunno.Authentication/tree/rel/1.0.0) |
 
 ## Notes
 
