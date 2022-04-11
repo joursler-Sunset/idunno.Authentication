@@ -26,7 +26,7 @@ namespace idunno.Authentication.SharedKey
 
             if (request.Headers == null)
             {
-                throw new NullReferenceException("Request has not headers.");
+                throw new NullReferenceException("Request has no headers.");
             }
 
             var canonicalizedHeaderBuilder = new CanonicalizedStringBuilder();
@@ -41,12 +41,15 @@ namespace idunno.Authentication.SharedKey
             }
             else
             {
-                canonicalizedHeaderBuilder.Append(request.Content.Headers.ContentEncoding);
-                canonicalizedHeaderBuilder.Append(request.Content.Headers.ContentLanguage);
-                canonicalizedHeaderBuilder.Append(request.Content.Headers == null ? "0" : ((long)request.Content.Headers.ContentLength).ToString(CultureInfo.InvariantCulture));
-                canonicalizedHeaderBuilder.Append(request.Content.Headers.ContentMD5 == null ? string.Empty : Convert.ToBase64String(request.Content.Headers.ContentMD5));
-                canonicalizedHeaderBuilder.Append(request.Content.Headers.ContentType);
+                canonicalizedHeaderBuilder.Append(request.Content.Headers?.ContentEncoding);
+                canonicalizedHeaderBuilder.Append(request.Content.Headers?.ContentLanguage);
+                canonicalizedHeaderBuilder.Append(request.Content.Headers == null ? "0" :
+                                                  request.Content.Headers.ContentLength == null ? "0" : ((long)request.Content.Headers.ContentLength).ToString(CultureInfo.InvariantCulture));
+                canonicalizedHeaderBuilder.Append(request.Content.Headers == null ? string.Empty :
+                                                  request.Content.Headers.ContentMD5 == null ? string.Empty : Convert.ToBase64String(request.Content.Headers.ContentMD5));
+                canonicalizedHeaderBuilder.Append(request.Content.Headers?.ContentType);
             }
+
             canonicalizedHeaderBuilder.Append(request.Headers.Date.HasValue ? request.Headers.Date.Value.ToString("R", CultureInfo.InvariantCulture) : null);
             canonicalizedHeaderBuilder.Append(request.Headers.IfModifiedSince.HasValue ? request.Headers.IfModifiedSince.Value.ToString("R", CultureInfo.InvariantCulture) : null);
             canonicalizedHeaderBuilder.Append(request.Headers.IfMatch);
@@ -65,6 +68,16 @@ namespace idunno.Authentication.SharedKey
                 throw new ArgumentNullException(nameof(request));
             }
 
+            if (request.RequestUri == null)
+            {
+                throw new ArgumentException("request has no URI.");
+            }
+
+            if (request.RequestUri.AbsolutePath == null)
+            {
+                throw new ArgumentException("RequestURI has no absolute path.");
+            }
+
             var canonicalizedResourceBuilder = new StringBuilder();
 
             canonicalizedResourceBuilder.Append(request.RequestUri.AbsolutePath);
@@ -73,7 +86,7 @@ namespace idunno.Authentication.SharedKey
             {
                 // We have query parameters
                 NameValueCollection queryNameValueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
-                var sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k]));
+                SortedList<string, string> sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k] ?? string.Empty));
 
                 foreach (var keyValuePair in sortedQueryNameValueList)
                 {
@@ -94,6 +107,11 @@ namespace idunno.Authentication.SharedKey
                 throw new ArgumentNullException(nameof(request));
             }
 
+            if (request.GetTypedHeaders().Date == null)
+            {
+                throw new ArgumentException("Request has no date header.");
+            }
+
             var canonicalizedHeaderBuilder = new CanonicalizedStringBuilder();
             canonicalizedHeaderBuilder.Append(request.Method.ToString().ToUpperInvariant());
             if (request.Headers == null)
@@ -106,19 +124,19 @@ namespace idunno.Authentication.SharedKey
             }
             else
             {
-                canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.ContentEncoding].ToString());
-                canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.ContentLanguage].ToString());
+                canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.ContentEncoding].ToString());
+                canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.ContentLanguage].ToString());
                 canonicalizedHeaderBuilder.Append(request.ContentLength == null ? "0" : ((long)request.ContentLength).ToString(CultureInfo.InvariantCulture));
-                canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.ContentMD5].ToString());
-                canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.ContentType].ToString());
+                canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.ContentMD5].ToString());
+                canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.ContentType].ToString());
             }
 
-            canonicalizedHeaderBuilder.Append(request.GetTypedHeaders().Date.HasValue ? request.GetTypedHeaders().Date.Value.ToString("R", CultureInfo.InvariantCulture) : null);
-            canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.IfModifiedSince].ToString());
-            canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.IfMatch].ToString());
-            canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.IfNoneMatch].ToString());
-            canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.IfUnmodifiedSince].ToString());
-            canonicalizedHeaderBuilder.Append(request.Headers[HeaderNames.Range].ToString());
+            canonicalizedHeaderBuilder.Append(request.GetTypedHeaders().Date.HasValue ? request.GetTypedHeaders().Date!.Value.ToString("R", CultureInfo.InvariantCulture) : null);
+            canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.IfModifiedSince].ToString());
+            canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.IfMatch].ToString());
+            canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.IfNoneMatch].ToString());
+            canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.IfUnmodifiedSince].ToString());
+            canonicalizedHeaderBuilder.Append(request.Headers?[HeaderNames.Range].ToString());
 
             return canonicalizedHeaderBuilder.ToString();
         }
@@ -135,11 +153,11 @@ namespace idunno.Authentication.SharedKey
 
             canonicalizedResourceBuilder.Append(request.Path);
 
-            if (request.Query.Any())
+            if (request.QueryString.Value != null && request.Query.Any())
             {
                 // We have query parameters
                 NameValueCollection queryNameValueCollection = HttpUtility.ParseQueryString(request.QueryString.Value);
-                var sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k]));
+                var sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k] ?? string.Empty));
 
                 foreach (var keyValuePair in sortedQueryNameValueList)
                 {

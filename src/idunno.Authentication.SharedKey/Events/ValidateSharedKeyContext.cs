@@ -28,6 +28,6 @@ namespace idunno.Authentication.SharedKey
         /// <summary>
         /// The key identifier to validate.
         /// </summary>
-        public string KeyId { get; set; }
+        public string KeyId { get; set; } = string.Empty;
     }
 }

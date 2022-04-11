@@ -43,7 +43,7 @@ namespace idunno.Authentication.SharedKey
                 if (request.Content != null && request.Content.Headers.ContentMD5 == null)
                 {
                     byte[] contentHash = SignatureValidator.CalculateBodyMd5(request).Result;
-                    if (contentHash != null)
+                    if (contentHash != null && contentHash.Length != 0)
                     {
                         request.Content.Headers.ContentMD5 = contentHash;
                     }

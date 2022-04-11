@@ -21,9 +21,12 @@ namespace idunno.Authentication.SharedKey
             Append(initialString);
         }
 
-        public CanonicalizedStringBuilder Append(object value)
+        public CanonicalizedStringBuilder Append(object? value)
         {
-            stringBuilder.Append(value);
+            if (value != null)
+            {
+                stringBuilder.Append(value);
+            }
             stringBuilder.Append('\n');
 
             return this;

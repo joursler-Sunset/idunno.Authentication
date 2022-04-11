@@ -25,6 +25,6 @@ namespace idunno.Authentication.SharedKey
         {
         }
 
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; }
     }
 }

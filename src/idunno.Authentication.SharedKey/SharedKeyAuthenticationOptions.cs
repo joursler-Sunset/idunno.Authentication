@@ -13,9 +13,9 @@ namespace idunno.Authentication.SharedKey
         /// The application may implement the interface fully, or it may create an instance of SharedKeyAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public new SharedKeyAuthenticationEvents Events
+        public new SharedKeyAuthenticationEvents? Events
         {
-            get { return (SharedKeyAuthenticationEvents)base.Events; }
+            get { return (SharedKeyAuthenticationEvents?)base.Events; }
 
             set { base.Events = value; }
         }

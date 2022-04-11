@@ -25,7 +25,7 @@ namespace idunno.Authentication.SharedKey
         /// <param name="keyId">The key identifier.</param>
         /// <param name="hmac">The HMAC.</param>
         /// <returns>True if parsing was successful, otherwise false.</returns>
-        internal static bool TryParse(string authenticationHeaderValue, out string keyId, out string hmac)
+        internal static bool TryParse(string authenticationHeaderValue, out string? keyId, out string? hmac)
         {
             if (authenticationHeaderValue.IndexOf(":", StringComparison.OrdinalIgnoreCase) >= 0)
             {
@@ -50,9 +50,15 @@ namespace idunno.Authentication.SharedKey
         /// <param name="keyId">The key identifier.</param>
         /// <param name="hmac">The HMAC.</param>
         /// <returns>True if parsing was successful, otherwise false.</returns>
-        internal static bool TryParse(string authenticationHeaderValue, out string keyId, out byte[] hmac)
+        internal static bool TryParse(string authenticationHeaderValue, out string? keyId, out byte[]? hmac)
         {
-            bool result = TryParse(authenticationHeaderValue, out keyId, out string hmacAsString);
+            bool result = TryParse(authenticationHeaderValue, out keyId, out string? hmacAsString);
+
+            if (hmacAsString == null)
+            {
+                hmac = null;
+                return false;
+            }
 
             hmac = result ? Convert.FromBase64String(hmacAsString) : null;
 

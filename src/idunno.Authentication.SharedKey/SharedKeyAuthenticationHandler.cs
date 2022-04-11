@@ -30,9 +30,9 @@ namespace idunno.Authentication.SharedKey
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
-        protected new SharedKeyAuthenticationEvents Events
+        protected new SharedKeyAuthenticationEvents? Events
         {
-            get { return (SharedKeyAuthenticationEvents)base.Events; }
+            get { return (SharedKeyAuthenticationEvents?)base.Events; }
             set { base.Events = value; }
         }
 
@@ -185,12 +185,15 @@ namespace idunno.Authentication.SharedKey
                     KeyId = keyId
                 };
 
-                await Events.ValidateSharedKey(validateSharedKeyContext).ConfigureAwait(true);
+                if (Events != null)
+                {
+                    await Events.ValidateSharedKey(validateSharedKeyContext).ConfigureAwait(true);
+                }
 
                 if (validateSharedKeyContext.Result != null &&
                     validateSharedKeyContext.Result.Succeeded)
                 {
-                    var ticket = new AuthenticationTicket(validateSharedKeyContext.Principal, Scheme.Name);
+                    var ticket = new AuthenticationTicket(validateSharedKeyContext.Principal!, Scheme.Name);
                     return AuthenticateResult.Success(ticket);
                 }
 
@@ -210,7 +213,10 @@ namespace idunno.Authentication.SharedKey
                     Exception = ex
                 };
 
-                await Events.AuthenticationFailed(authenticationFailedContext).ConfigureAwait(true);
+                if (Events != null)
+                {
+                    await Events.AuthenticationFailed(authenticationFailedContext).ConfigureAwait(true);
+                }
 
                 if (authenticationFailedContext.Result != null)
                 {

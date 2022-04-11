@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         public static AuthenticationBuilder AddSharedKey(
             this AuthenticationBuilder builder,
             string authenticationScheme,
-            Action<SharedKeyAuthenticationOptions> configureOptions)
+            Action<SharedKeyAuthenticationOptions>? configureOptions)
         {
             if (builder == null)
             {

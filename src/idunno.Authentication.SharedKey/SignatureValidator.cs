@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Barry Dorrans. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -17,13 +18,23 @@ namespace idunno.Authentication.SharedKey
         /// <returns>The hash value for the <paramref name="request"/> body.</returns>
         public static async Task<byte[]> CalculateBodyMd5(HttpRequestMessage request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (request.Content == null)
+            {
+                throw new ArgumentException("Request has no content to calculate MD5 for.");
+            }
+
             await request.Content.LoadIntoBufferAsync().ConfigureAwait(false);
             using var bodyStream = new MemoryStream();
             await request.Content.CopyToAsync(bodyStream).ConfigureAwait(false);
             bodyStream.Position = 0;
             if (bodyStream.Length <= 0)
             {
-                return null;
+                return Array.Empty<byte>();
             }
 
             using var md5 = MD5.Create();

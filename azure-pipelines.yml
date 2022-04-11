@@ -16,8 +16,8 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   disable.coverage.autogenerate: 'true'
-  isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')] 
-  isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')] 
+  isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
+  isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')]
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 stages:
@@ -111,6 +111,17 @@ stages:
         codeCoverageTool: cobertura
         summaryFileLocation: $(build.artifactstagingdirectory)/coverageReports/cobertura.xml
         reportDirectory: '$(build.artifactstagingdirectory)/coverageReports/'
+
+    - task: NuGetAuthenticate@0
+      displayName: 'NuGet Authenticate'
+
+    - task: NuGetCommand@2
+      displayName: 'Push unsigned packages to Artifacts feed'
+      inputs:
+        command: push
+        packagesToPush: '$(Pipeline.Workspace)/BuildPackages/**/*.nupkg'
+        publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
+        allowPackageConflicts: false
 
 - stage: CodeSign
   displayName: Codesign release assemblies and packages
@@ -252,37 +263,3 @@ stages:
           - publish: $(Pipeline.Workspace)\BuildPackages
             displayName: Publish signed artifacts
             artifact: SignedPackages
-
-- stage: Push_Packages
-  displayName: Push packages to nuget or development feeds
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - job: PushUnsigned
-    displayName: Push unsigned packages to Azure Artifacts
-    condition: |
-      and(
-        eq(variables['isDevBranch'], 'true'),
-        eq(variables['isPullRequest'], 'false')
-      )
-    pool:
-      vmImage: 'windows-latest'
-
-    steps:
-    # .NET 6
-    - task: UseDotNet@2
-      displayName: 'Install .NET Core 6.0.x SDK'
-      inputs:
-        version: '6.0.x'
-        packageType: 'sdk'
-
-    - task: NuGetAuthenticate@0
-      displayName: 'NuGet Authenticate'
-
-    - task: NuGetCommand@2
-      displayName: 'NuGet push'
-      inputs:
-        command: push
-        packagesToPush: '$(Pipeline.Workspace)\BuildPackages\*.nupkg'
-        publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
-        allowPackageConflicts: false
