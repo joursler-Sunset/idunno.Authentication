@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -149,7 +150,7 @@ namespace idunno.Authentication.SharedKey
                         Request.Body.Position = currentPosition;
 
                         using var md5 = MD5.Create();
-                        var calculatedContentHash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+                        var calculatedContentHash = md5.ComputeHash(new UTF8Encoding(false).GetBytes(body));
 
                         byte[] providedContentHash;
                         try

@@ -44,7 +44,7 @@ namespace idunno.Authentication.SharedKey
         private static byte[] CalculateHmac256(byte[] key, string plainText)
         {
             using HashAlgorithm hashAlgorithm = new HMACSHA256(key);
-            byte[] messageBuffer = Encoding.UTF8.GetBytes(plainText);
+            byte[] messageBuffer = new UTF8Encoding(false).GetBytes(plainText);
             return hashAlgorithm.ComputeHash(messageBuffer);
         }
     }

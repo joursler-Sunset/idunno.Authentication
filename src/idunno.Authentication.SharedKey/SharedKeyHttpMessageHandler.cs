@@ -42,7 +42,7 @@ namespace idunno.Authentication.SharedKey
                 // We can't rely on the length header, as it's not set yet.
                 if (request.Content != null && request.Content.Headers.ContentMD5 == null)
                 {
-                    byte[] contentHash = SignatureValidator.CalculateBodyMd5(request).Result;
+                    byte[] contentHash = await SignatureValidator.CalculateBodyMd5(request).ConfigureAwait(true);
                     if (contentHash != null && contentHash.Length != 0)
                     {
                         request.Content.Headers.ContentMD5 = contentHash;
@@ -55,7 +55,7 @@ namespace idunno.Authentication.SharedKey
                 SharedKeyAuthentication.AuthorizationScheme,
                 string.Format(CultureInfo.InvariantCulture, "{0}:{1}", KeyId, Convert.ToBase64String(hash)));
 
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(true);
         }
 
         private string KeyId { get; set; }

@@ -31,7 +31,7 @@ namespace idunno.Authentication.SharedKey
             await request.Content.LoadIntoBufferAsync().ConfigureAwait(false);
             using var bodyStream = new MemoryStream();
             await request.Content.CopyToAsync(bodyStream).ConfigureAwait(false);
-            bodyStream.Position = 0;
+            bodyStream.Seek(0, SeekOrigin.Begin);
             if (bodyStream.Length <= 0)
             {
                 return Array.Empty<byte>();
