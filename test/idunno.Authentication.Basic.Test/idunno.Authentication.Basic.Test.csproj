@@ -4,6 +4,7 @@
     <Description>Tests for idunno.Authentication</Description>
     <DebugType>Full</DebugType>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <Configurations>Debug;Release;CodeQL</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>
+    <Configurations>Debug;Release;CodeQL</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

@@ -4,9 +4,15 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
 	<CheckEolTargetFramework>false</CheckEolTargetFramework>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <Configurations>Debug;Release;CodeQL</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CodeQL|AnyCPU'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors>NU1605</WarningsAsErrors>
   </PropertyGroup>
