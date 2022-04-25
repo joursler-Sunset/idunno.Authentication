@@ -19,11 +19,12 @@ variables:
   isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
   isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')]
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
-  - group: Report Generator License Key
 
 stages:
 - stage: Build
   displayName: Build, test and package
+  variables:
+    - group: 'Report Generator License Key'
   jobs:
   - job: Build
     pool:
