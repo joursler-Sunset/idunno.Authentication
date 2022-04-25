@@ -19,6 +19,7 @@ variables:
   isDevBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
   isReleaseBranch: $[eq(variables['Build.SourceBranch'], 'refs/heads/rel')]
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  - group: Report Generator License Key
 
 stages:
 - stage: Build
@@ -86,6 +87,7 @@ stages:
         reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
         targetdir: $(build.artifactstagingdirectory)/coverageReports/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
+        license: '$(ReportGeneratorLicenseKey)'
 
     # Produce unsigned packages
     - task: DotNetCoreCLI@2
