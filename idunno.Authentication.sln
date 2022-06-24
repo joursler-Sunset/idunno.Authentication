@@ -23,6 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6462A7D2-501
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{035D46E2-9278-4260-903B-66055D6CA268}"
+	ProjectSection(SolutionItems) = preProject
+		src\idunno.Authentication.SharedKey\SharedKeyAuthenticationOptions.cs = src\idunno.Authentication.SharedKey\SharedKeyAuthenticationOptions.cs
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AE540C4C-DE07-49DB-81BD-B77C1F9EB8BF}"
 EndProject
