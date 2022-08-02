@@ -86,7 +86,7 @@ stages:
       displayName: Generate Code Coverage Report
       inputs:
         reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-        targetdir: $(build.artifactstagingdirectory)/coverageReports/
+        targetdir: $(Build.ArtifactStagingDirectory)/coverageReports/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         license: '$(ReportGeneratorLicenseKey)'
 
@@ -136,7 +136,7 @@ stages:
         displayName: 'Push unsigned packages to Artifacts feed'
         inputs:
           command: push
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/Packages/*.nupkg'
+          packagesToPush: '$(Pipeline.Workspace)\BuildPackages\*.nupkg'
           publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
           allowPackageConflicts: false
 
