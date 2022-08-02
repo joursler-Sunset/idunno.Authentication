@@ -59,9 +59,9 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install -g nbgv
+        arguments: install --tool-path tooling nbgv
 
-    - script: nbgv cloud
+    - script: .\tooling\nbgv cloud
       displayName: Build Version Properties
 
     # Build
