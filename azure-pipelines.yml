@@ -28,7 +28,7 @@ stages:
   jobs:
   - job: Build
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
 
     steps:
     # .NET 6
@@ -59,9 +59,9 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install --tool-path tooling nbgv
+        arguments: install nbgv
 
-    - script: ./tooling/nbgv cloud
+    - script: nbgv cloud
       displayName: Build Version Properties
 
     # Build
@@ -127,7 +127,7 @@ stages:
   jobs:
   - job: PublishUnsigned
     pool:
-      vmImage: 'ubuntu-latest'  
+      vmImage: 'windows-latest'  
     steps:
       - checkout: none
       - download: current
