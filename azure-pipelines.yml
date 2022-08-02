@@ -59,7 +59,7 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install nbgv
+        arguments: install -g nbgv
 
     - script: nbgv cloud
       displayName: Build Version Properties
