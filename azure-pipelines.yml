@@ -140,10 +140,11 @@ stages:
 
 - stage: CodeSign
   displayName: Codesign release assemblies and packages
-  dependsOn: Build
+  dependsOn: PublishUnsigned
   condition: |
     and(
       succeeded('Build'),
+      succeeded('PublishUnsigned'),
       startsWith(variables['Build.sourceBranch'], 'refs/heads/rel'),
       not(eq(variables['build.reason'], 'PullRequest'))
     )
