@@ -126,6 +126,8 @@ stages:
     )
   jobs:
   - job: PublishUnsigned
+    pool:
+      vmImage: 'windows-latest'  
     steps:
       - task: NuGetAuthenticate@0
         displayName: 'NuGet Authenticate'
