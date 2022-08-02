@@ -105,7 +105,7 @@ stages:
     # Publish unsigned packages
     - publish: $(Build.ArtifactStagingDirectory)\Packages
       displayName: Publish artifacts
-      artifact: BuildPackages
+      artifact: unsignedPackages
 
     # Publish Code Coverage results
     - task: PublishCodeCoverageResults@1
@@ -129,6 +129,12 @@ stages:
     pool:
       vmImage: 'windows-latest'  
     steps:
+      - checkout: none
+     
+      - download: current
+        displayName: 'Get unsignedPackages from build stage'
+        artifact: unsignedPackages
+
       - task: NuGetAuthenticate@0
         displayName: 'NuGet Authenticate'
 
