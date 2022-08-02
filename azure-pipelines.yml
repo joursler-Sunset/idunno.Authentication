@@ -124,16 +124,18 @@ stages:
       not(eq(variables['build.reason'], 'PullRequest'))
     )
   jobs:
-    - task: NuGetAuthenticate@0
-      displayName: 'NuGet Authenticate'
+  - job: PublishUnsigned
+    steps:
+      - task: NuGetAuthenticate@0
+        displayName: 'NuGet Authenticate'
 
-    - task: NuGetCommand@2
-      displayName: 'Push unsigned packages to Artifacts feed'
-      inputs:
-        command: push
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/Packages/*.nupkg'
-        publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
-        allowPackageConflicts: false
+      - task: NuGetCommand@2
+        displayName: 'Push unsigned packages to Artifacts feed'
+        inputs:
+          command: push
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/Packages/*.nupkg'
+          publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
+          allowPackageConflicts: false
 
 - stage: CodeSign
   displayName: Codesign release assemblies and packages
