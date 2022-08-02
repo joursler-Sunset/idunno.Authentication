@@ -118,6 +118,7 @@ stages:
 - stage : PublishUnsigned
   displayName: Push unsigned artificates to artifact feed
   dependsOn: Build
+  condition: |
     and(
       succeeded('Build'),
       startsWith(variables['Build.sourceBranch'], 'refs/heads/dev'),
