@@ -28,7 +28,7 @@ stages:
   jobs:
   - job: Build
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'ubuntu-latest'
 
     steps:
     # .NET 6
@@ -103,9 +103,9 @@ stages:
         nobuild: true
 
     # Publish unsigned packages
-    - publish: $(Build.ArtifactStagingDirectory)\Packages
+    - publish: $(Build.ArtifactStagingDirectory)/Packages
       displayName: Publish artifacts
-      artifact: unsignedPackages
+      artifact: BuildPackages
 
     # Publish Code Coverage results
     - task: PublishCodeCoverageResults@1
@@ -127,13 +127,12 @@ stages:
   jobs:
   - job: PublishUnsigned
     pool:
-      vmImage: 'windows-latest'  
+      vmImage: 'ubuntu-latest'  
     steps:
       - checkout: none
-     
       - download: current
         displayName: 'Get unsignedPackages from build stage'
-        artifact: unsignedPackages
+        artifact: BuildPackages
 
       - task: NuGetAuthenticate@0
         displayName: 'NuGet Authenticate'
@@ -168,6 +167,11 @@ stages:
       runOnce:
         deploy:
           steps:
+          - checkout: none
+          - download: current
+            displayName: 'Get unsignedPackages from build stage'
+            artifact: BuildPackages          
+
           # Install nuget tool
           - task: NuGetToolInstaller@1
 
