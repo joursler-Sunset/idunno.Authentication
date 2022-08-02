@@ -112,9 +112,18 @@ stages:
       displayName: 'Publish Code Coverage Results'
       inputs:
         codeCoverageTool: cobertura
-        summaryFileLocation: $(build.artifactstagingdirectory)/coverageReports/cobertura.xml
-        reportDirectory: '$(build.artifactstagingdirectory)/coverageReports/'
+        summaryFileLocation: (Build.ArtifactStagingDirectory)/coverageReports/cobertura.xml
+        reportDirectory: (Build.ArtifactStagingDirectory)/coverageReports/'
 
+- stage : PublishUnsigned
+  displayName: Push unsigned artificates to artifact feed
+  dependsOn: Build
+    and(
+      succeeded('Build'),
+      startsWith(variables['Build.sourceBranch'], 'refs/heads/dev'),
+      not(eq(variables['build.reason'], 'PullRequest'))
+    )
+  jobs:
     - task: NuGetAuthenticate@0
       displayName: 'NuGet Authenticate'
 
