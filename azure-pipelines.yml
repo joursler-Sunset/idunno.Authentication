@@ -6,6 +6,7 @@ trigger:
 
 pr:
 - dev
+- dependabot/*
 - rel/*
 
 variables:
@@ -127,7 +128,7 @@ stages:
   jobs:
   - job: PublishUnsigned
     pool:
-      vmImage: 'windows-latest'  
+      vmImage: 'windows-latest'
     steps:
       - checkout: none
       - download: current
@@ -170,7 +171,7 @@ stages:
           - checkout: none
           - download: current
             displayName: 'Get unsignedPackages from build stage'
-            artifact: BuildPackages          
+            artifact: BuildPackages
 
           # Install nuget tool
           - task: NuGetToolInstaller@1
