@@ -3,6 +3,7 @@
 trigger:
 - dev
 - rel/*
+- dependabot/*
 
 pr:
 - dev
