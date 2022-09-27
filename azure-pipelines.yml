@@ -139,11 +139,12 @@ stages:
       - task: NuGetAuthenticate@0
         displayName: 'NuGet Authenticate'
 
-      - task: NuGetCommand@2
+      - task: DotNetCoreCLI@2
         displayName: 'Push unsigned packages to Artifacts feed'
         inputs:
-          command: push
-          packagesToPush: '$(Pipeline.Workspace)\BuildPackages\*.nupkg'
+          command: 'push'
+          searchPatternPush: '$(Pipeline.Workspace)/BuildPackages/*.nupkg'
+          nuGetFeedType: 'internal'
           publishVstsFeed: 'idunno.Authentication/idunno.Authentication.Builds'
           allowPackageConflicts: false
 
