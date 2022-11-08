@@ -41,7 +41,7 @@ namespace idunno.Authentication.SharedKey
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            string authorizationHeader = Request.Headers["Authorization"];
+            string? authorizationHeader = Request.Headers["Authorization"];
             if (string.IsNullOrEmpty(authorizationHeader))
             {
                 return AuthenticateResult.NoResult();
@@ -130,7 +130,9 @@ namespace idunno.Authentication.SharedKey
                     // However we can't do this if we're chunked.
                     if (!Request.Headers[HeaderNames.TransferEncoding].ToString().Contains("chunked", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (Request.Headers[HeaderNames.ContentMD5].Count == 0 || Request.Headers[HeaderNames.ContentMD5].ToString().Trim().Length == 0)
+                        if (Request.Headers[HeaderNames.ContentMD5].Count == 0 ||
+                            string.IsNullOrEmpty(Request.Headers[HeaderNames.ContentMD5].ToString()) ||
+                            Request.Headers[HeaderNames.ContentMD5].ToString().Trim().Length == 0)
                         {
                             const string bodyButNoMD5Header = "Request has content but no md5 header.";
                             Logger.LogInformation(bodyButNoMD5Header);
@@ -155,7 +157,8 @@ namespace idunno.Authentication.SharedKey
                         byte[] providedContentHash;
                         try
                         {
-                            providedContentHash = Convert.FromBase64String(Request.Headers[HeaderNames.ContentMD5]);
+                            // Null check enforced by the outer if statement.
+                            providedContentHash = Convert.FromBase64String(Request.Headers[HeaderNames.ContentMD5]!);
                         }
                         catch (Exception ex)
                         {

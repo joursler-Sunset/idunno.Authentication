@@ -33,6 +33,13 @@ stages:
       vmImage: 'windows-latest'
 
     steps:
+    # .NET 7
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core 7.0.x SDK'
+      inputs:
+        version: '7.0.x'
+        packageType: 'sdk'
+
     # .NET 6
     - task: UseDotNet@2
       displayName: 'Install .NET Core 6.0.x SDK'
