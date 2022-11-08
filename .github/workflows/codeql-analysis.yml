@@ -13,7 +13,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: 
+    branches:
       - dev
       - 'feature/*'
   pull_request:
@@ -39,6 +39,14 @@ jobs:
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
     steps:
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          3.1.x
+          5.0.x
+          6.0.x
+          7.0.x
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -53,7 +61,7 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     # We can't use autobuild because we want to restrict the build to just src folder solutions
-    # and avoid triggering deterministic builds and git commit based versioning 
+    # and avoid triggering deterministic builds and git commit based versioning
     # (as GitHub workflows shallow clone by default, and that breaks the versioning.)
     - run: dotnet build -c CodeQL
 
