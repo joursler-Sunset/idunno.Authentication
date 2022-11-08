@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -60,7 +61,6 @@ namespace idunno.Authentication.SharedKey
             return canonicalizedHeaderBuilder.ToString();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "The azure specification normalizes on lower case.")]
         public static string CanonicalizeResource(this HttpRequestMessage request)
         {
             if (request == null)
@@ -85,16 +85,7 @@ namespace idunno.Authentication.SharedKey
             if (request.RequestUri.Query.Length > 0 )
             {
                 // We have query parameters
-                NameValueCollection queryNameValueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
-                SortedList<string, string> sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k] ?? string.Empty));
-
-                foreach (var keyValuePair in sortedQueryNameValueList)
-                {
-                    canonicalizedResourceBuilder.Append('\n');
-                    canonicalizedResourceBuilder.Append(keyValuePair.Key.ToLowerInvariant());
-                    canonicalizedResourceBuilder.Append(':');
-                    canonicalizedResourceBuilder.Append(keyValuePair.Value);
-                }
+                canonicalizedResourceBuilder.Append(CanonicalizeQueryString(request.RequestUri.Query));
             }
 
             return canonicalizedResourceBuilder.ToString();
@@ -141,7 +132,6 @@ namespace idunno.Authentication.SharedKey
             return canonicalizedHeaderBuilder.ToString();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "The azure specification normalizes on lower case.")]
         public static string CanonicalizeResource(this HttpRequest request)
         {
             if (request == null)
@@ -155,20 +145,57 @@ namespace idunno.Authentication.SharedKey
 
             if (request.QueryString.Value != null && request.Query.Any())
             {
-                // We have query parameters
-                NameValueCollection queryNameValueCollection = HttpUtility.ParseQueryString(request.QueryString.Value);
-                var sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k] ?? string.Empty));
-
-                foreach (var keyValuePair in sortedQueryNameValueList)
-                {
-                    canonicalizedResourceBuilder.Append('\n');
-                    canonicalizedResourceBuilder.Append(keyValuePair.Key.ToLowerInvariant());
-                    canonicalizedResourceBuilder.Append(':');
-                    canonicalizedResourceBuilder.Append(keyValuePair.Value);
-                }
+                canonicalizedResourceBuilder.Append(CanonicalizeQueryString(request.QueryString.Value));
             }
 
             return canonicalizedResourceBuilder.ToString();
+        }
+
+        private static string CanonicalizeQueryString(string queryString)
+        {
+            var queryStringBuilder = new StringBuilder();
+
+            NameValueCollection queryNameValueCollection = HttpUtility.ParseQueryString(queryString);
+            var sortedQueryNameValueList = new SortedList<string, string>(queryNameValueCollection.AllKeys.ToDictionary(k => k ?? string.Empty, k => queryNameValueCollection[k] ?? string.Empty));
+
+            foreach (var keyValuePair in sortedQueryNameValueList)
+            {
+                queryStringBuilder.Append('\n');
+                queryStringBuilder.Append(keyValuePair.Key.ToLowerInvariant());
+                queryStringBuilder.Append(':');
+                if (keyValuePair.Value == null || !keyValuePair.Value.Contains(',', StringComparison.InvariantCulture))
+                {
+                    queryStringBuilder.Append(keyValuePair.Value);
+                }
+                else
+                {
+                    // We have multiple values, all nicely separated by commas, but they're not sorted.
+                    var values = new List<string?>(keyValuePair.Value.Split(',', StringSplitOptions.None));
+                    values.Sort(new InvariantComparer());
+                    queryStringBuilder.Append(string.Join(",", values));
+                }
+            }
+            return queryStringBuilder.ToString();
+        }
+    }
+
+    internal class InvariantComparer : IComparer<string?>
+    {
+        internal static readonly InvariantComparer Default = new InvariantComparer();
+
+        private readonly CompareInfo _compareInfo;
+
+        internal InvariantComparer()
+        {
+            _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
+        }
+
+        public int Compare(string? a, string? b)
+        {
+            if (a is string sa && b is string sb)
+                return _compareInfo.Compare(sa, sb);
+            else
+                return Comparer.Default.Compare(a, b);
         }
     }
 }

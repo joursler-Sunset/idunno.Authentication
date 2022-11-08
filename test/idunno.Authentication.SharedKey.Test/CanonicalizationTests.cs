@@ -77,7 +77,9 @@ namespace idunno.Authentication.SharedKey.Test
         [InlineData("api", "a=1&b=2", "/api\na:1\nb:2")]
         [InlineData("api", "a=1&b=2&a=3", "/api\na:1,3\nb:2")]
         [InlineData("api", "a=1&b=2&a=3&c", "/api\n:c\na:1,3\nb:2")]
+        [InlineData("api", "b=2&a=1&a=3&c", "/api\n:c\na:1,3\nb:2")]
         [InlineData("api", "c&a=1&b=2&a=3", "/api\n:c\na:1,3\nb:2")]
+        [InlineData("api", "c&a=3&b=2&a=1", "/api\n:c\na:1,3\nb:2")]
         [InlineData("api", "c", "/api\n:c")]
         [InlineData("api/", "a=1", "/api/\na:1")]
         public void VerifyResourceCanonicialization(string path, string query, string expected)

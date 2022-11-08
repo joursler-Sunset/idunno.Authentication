@@ -43,7 +43,7 @@ namespace idunno.Authentication.SharedKey.Test
         }
 
         [Fact]
-        public async Task DateHaderIsAddedIfNotPresent()
+        public async Task DateHeaderIsAddedIfNotPresent()
         {
             var requestLoggingHandler = new RequestLoggingHandler();
 
@@ -66,7 +66,7 @@ namespace idunno.Authentication.SharedKey.Test
         }
 
         [Fact]
-        public async Task DateHaderIsNotAddedOrChangedIfAlreadyPresent()
+        public async Task DateHeaderIsNotAddedOrChangedIfAlreadyPresent()
         {
             var dateHeader = new DateTime(2000, 1, 1, 0, 0, 0);
 
@@ -188,7 +188,6 @@ namespace idunno.Authentication.SharedKey.Test
             Assert.Equal(1, requestLoggingHandler.Requests.Count);
             Assert.Equal(keyID, requestLoggingHandler.Requests[0].Headers.Authorization.Parameter[..keyID.Length]);
         }
-
 
         public class RequestLoggingHandler : DelegatingHandler
         {
