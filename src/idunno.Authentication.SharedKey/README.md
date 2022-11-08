@@ -155,7 +155,7 @@ This signature is attached to the HTTP request in the authorization header, with
 and then the calculated signature, encoded with [Base64](https://en.wikipedia.org/wiki/Base64). 
 
 ```
-Authorization="[SharedKey] <Key Identifier>:<Signature>"
+Authorization="SharedKey <Key Identifier>:<Signature>"
 ```
 
 ### Building a signature
