@@ -94,7 +94,7 @@ stages:
     - task: reportgenerator@5
       displayName: Generate Code Coverage Report
       inputs:
-        reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+        reports: '$(Agent.TempDirectory)/**/cobertura.xml'
         targetdir: $(Build.ArtifactStagingDirectory)/coverageReports/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         license: '$(ReportGeneratorLicenseKey)'
