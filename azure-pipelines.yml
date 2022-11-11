@@ -139,8 +139,8 @@ stages:
       displayName: 'Publish Code Coverage Results'
       inputs:
         codeCoverageTool: cobertura
-        summaryFileLocation: $(Build.ArtifactStagingDirectory)/coverageReports/cobertura.xml
-        reportDirectory: $(Build.ArtifactStagingDirectory)/coverageReports/'
+        summaryFileLocation: $(Build.ArtifactStagingDirectory)/coverageReports/Cobertura.xml
+        reportDirectory: $(Build.ArtifactStagingDirectory)/coverageReports/
 
 - stage : PublishUnsigned
   displayName: Push unsigned artificates to artifact feed
