@@ -89,12 +89,28 @@ stages:
         projects: '**/test/**/*.csproj'
         arguments: '--configuration $(buildConfiguration) --settings $(Build.SourcesDirectory)/tests.runsettings -- RunConfiguration.DisableAppDomain=true'
 
+    - task: CmdLine@2
+      displayName: dump directory structure
+      inputs:
+        script: |
+          echo "Structure of work folder of this pipeline:"
+          tree $(Agent.WorkFolder)\1 /f
+          echo "Build.ArtifactStagingDirectory:"
+          echo "$(Build.ArtifactStagingDirectory)"
+          echo "Build.BinariesDirectory:"
+          echo "$(Build.BinariesDirectory)"
+          echo "Build.SourcesDirectory:"
+          echo "$(Build.SourcesDirectory)"
+          echo "Agent.TempDirectory:"
+          echo "$(Agent.TempDirectory)"
+          dir /s /q $(Agent.TempDirectory)
+
     # Generate code coverage report
     # https://danielpalme.github.io/ReportGenerator/
     - task: reportgenerator@5
       displayName: Generate Code Coverage Report
       inputs:
-        reports: '$(Agent.TempDirectory)/**/cobertura.xml'
+        reports: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
         targetdir: $(Build.ArtifactStagingDirectory)/coverageReports/
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;Badges'
         license: '$(ReportGeneratorLicenseKey)'
