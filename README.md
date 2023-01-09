@@ -39,7 +39,7 @@ Azure Artifacts holds a [feed of current dev builds](https://dev.azure.com/idunn
 
 | Version | Notes |
 |---------|-------|
-|2.3.0    | Added Shared key authentication<br>Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, .NET 5.0, 6.0 and 7.0 |
+|2.3.0    | Added Shared key authentication<br>Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, ASP.NET 5.0, 6.0 and 7.0 |
 |2.2.3    | Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, .NET 5.0 and .NET 6.0 |
 |2.2.2    | Basic authentication now [multi-targets](https://github.com/blowdart/idunno.Authentication/issues/46) ASP.NET Core 2.1, 3.0 and 3.1 |
 |2.2.1    | Basic authentication now [returns a 421 request when a request is issued over HTTP](https://github.com/blowdart/idunno.Authentication/issues/44), unless AllowInsecureProtocol is set |
