@@ -162,7 +162,6 @@ stages:
   condition: |
     and(
       succeeded('Build'),
-      succeeded('PublishUnsigned'),
       startsWith(variables['Build.sourceBranch'], 'refs/heads/rel'),
       not(eq(variables['build.reason'], 'PullRequest'))
     )
