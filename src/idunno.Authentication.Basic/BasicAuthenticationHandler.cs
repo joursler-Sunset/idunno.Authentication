@@ -12,13 +12,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using System.Globalization;
 
 namespace idunno.Authentication.Basic
 {
     internal class BasicAuthenticationHandler : AuthenticationHandler<BasicAuthenticationOptions>
     {
         private const string _Scheme = "Basic";
+
+        private readonly UTF8Encoding _utf8ValidatingEncoding = new UTF8Encoding(false, true);
 
         public BasicAuthenticationHandler(
             IOptionsMonitor<BasicAuthenticationOptions> options,
@@ -48,19 +49,21 @@ namespace idunno.Authentication.Basic
                 return AuthenticateResult.NoResult();
             }
 
+            // Exact match on purpose, rather than using string compare
+            // asp.net request parsing will always trim the header and remove trailing spaces
+            if (_Scheme == authorizationHeader)
+            {
+                const string noCredentialsMessage = "Authorization scheme was Basic but the header had no credentials.";
+                Logger.LogInformation(noCredentialsMessage);
+                return AuthenticateResult.Fail(noCredentialsMessage);
+            }
+
             if (!authorizationHeader.StartsWith(_Scheme + ' ', StringComparison.OrdinalIgnoreCase))
             {
                 return AuthenticateResult.NoResult();
             }
 
             string encodedCredentials = authorizationHeader.Substring(_Scheme.Length).Trim();
-
-            if (string.IsNullOrEmpty(encodedCredentials))
-            {
-                const string noCredentialsMessage = "No credentials";
-                Logger.LogInformation(noCredentialsMessage);
-                return AuthenticateResult.Fail(noCredentialsMessage);
-            }
 
             try
             {
@@ -79,14 +82,13 @@ namespace idunno.Authentication.Basic
 
                 try
                 {
-                    decodedCredentials = Encoding.UTF8.GetString(base64DecodedCredentials);
+                    decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
                 }
                 catch (Exception ex)
                 {
-                    const string failedToDecodeCredentials = "Cannot build credentials from decoded base64 value, exception {0} encountered.";
-                    var logMessage = string.Format(CultureInfo.InvariantCulture, failedToDecodeCredentials, ex.Message);
-                    Logger.LogInformation(logMessage);
-                    return AuthenticateResult.Fail(logMessage);
+                    const string failedToDecodeCredentials = "Cannot build credentials from decoded base64 value, exception {ex.Message} encountered.";
+                    Logger.LogInformation(failedToDecodeCredentials, ex.Message);
+                    return AuthenticateResult.Fail(ex.Message);
                 }
 
                 var delimiterIndex = decodedCredentials.IndexOf(":", StringComparison.OrdinalIgnoreCase);

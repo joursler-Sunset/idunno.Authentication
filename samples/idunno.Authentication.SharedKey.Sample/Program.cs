@@ -66,9 +66,9 @@ internal class IdentityBuilder
 }
 
 internal static class ClaimsHelper
-{ 
+{
     public static IDictionary<string, string> ToDictionary(IEnumerable<Claim> claims)
-    { 
+    {
         var claimsDictionary = new Dictionary<string, string>();
 
         foreach (var claim in claims)

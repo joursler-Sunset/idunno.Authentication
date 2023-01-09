@@ -47,6 +47,15 @@ namespace idunno.Authentication.SharedKey
                 return AuthenticateResult.NoResult();
             }
 
+            // Exact match on purpose, rather than using string compare
+            // asp.net request parsing will always trim the header and remove trailing spaces
+            if (SharedKeyAuthentication.AuthorizationScheme == authorizationHeader)
+            {
+                const string noCredentialsMessage = "SharedKey scheme found but the header had no credentials.";
+                Logger.LogInformation(noCredentialsMessage);
+                return AuthenticateResult.Fail(noCredentialsMessage);
+            }
+
             if (!authorizationHeader.StartsWith(SharedKeyAuthentication.AuthorizationScheme+ ' ', StringComparison.OrdinalIgnoreCase))
             {
                 return AuthenticateResult.NoResult();
@@ -80,14 +89,7 @@ namespace idunno.Authentication.SharedKey
                 return AuthenticateResult.Fail(requestOutsideValidityRange);
             }
 
-            // Parse and validate the authorization header
             var credentials = authorizationHeader[SharedKeyAuthentication.AuthorizationScheme.Length..].Trim();
-            if (string.IsNullOrEmpty(credentials))
-            {
-                const string noCredentials = "No credentials specified";
-                Logger.LogInformation(noCredentials);
-                return AuthenticateResult.Fail(noCredentials);
-            }
 
             string keyId;
             if (credentials.Contains(':', StringComparison.OrdinalIgnoreCase))
@@ -96,22 +98,29 @@ namespace idunno.Authentication.SharedKey
             }
             else
             {
-                const string noKeyId = "No key identifier specified.";
-                Logger.LogInformation(noKeyId);
-                return AuthenticateResult.Fail(noKeyId);
-            }
-
-            byte[] key = Options.KeyResolver(keyId);
-            if (key == null || key.Length == 0)
-            {
-                const string noKey = "Key identifier could not be resolved to a key.";
-                Logger.LogInformation(noKey);
-                return AuthenticateResult.Fail(noKey);
+                const string invalidFormat = "Invalid key:signature format.";
+                Logger.LogInformation(invalidFormat);
+                return AuthenticateResult.Fail(invalidFormat);
             }
 
             try
             {
+                byte[] key = Options.KeyResolver(keyId);
+                if (key == null || key.Length == 0)
+                {
+                    const string noKey = "Key identifier could not be resolved to a key.";
+                    Logger.LogInformation(noKey);
+                    return AuthenticateResult.Fail(noKey);
+                }
+
                 string encodedSignature = credentials[(credentials.IndexOf(':', StringComparison.OrdinalIgnoreCase) + 1)..];
+                if (encodedSignature == null || encodedSignature.Length == 0)
+                {
+                    const string missingSignature = "Key identifier found but no signature was supplied.";
+                    Logger.LogInformation(missingSignature);
+                    return AuthenticateResult.Fail(missingSignature);
+                }
+
                 byte[] providedSignature;
                 try
                 {
@@ -169,7 +178,7 @@ namespace idunno.Authentication.SharedKey
 
                         if (!CryptographicOperations.FixedTimeEquals(calculatedContentHash, providedContentHash))
                         {
-                            const string contentHashCheckFailed = "Content has does not match content hash";
+                            const string contentHashCheckFailed = "MD5 checksum failed to match content.";
                             Logger.LogInformation(contentHashCheckFailed);
                             return AuthenticateResult.Fail(contentHashCheckFailed);
                         }

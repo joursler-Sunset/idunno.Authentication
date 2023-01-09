@@ -8,10 +8,14 @@ This repository contains a collection of various authentication mechanisms for A
 * [Shared Key Authentication](src/idunno.Authentication.SharedKey/)
 * [Certificate Authentication](src/idunno.Authentication.Certificate/)
 
-Basic Authentication started as a demonstration of how to write authentication middleware and was not as something you would seriously consider using, but some people want Basic Authentication so here it is.
+Basic Authentication started as a demonstration of how to write authentication middleware and was not as something you would seriously consider using, but apparently lots of you want Basic Authentication 
+for apis, webhooks and other things so here it is.
 
 Certificate Authentication is a common request on the ASP.NET Core Security repo, so I wrote one for Core 2.x.
 ASP.NET Core 3.0 took that as a starting point and includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
+
+Shared Key Authentication is almost an implementation of the shared secret authentication Azure Blob Storage uses, with the Azure specific things like tenant identifier removed. If you're going to use
+this in a real project you should have someone else look over the hashing used to reassure yourself (and me) that it doesn't have any mistakes.
 
 Basic Authentication is available for ASP.NET Core 2.1 and later.
 Shared Key Authentication is available for ASP.NET Core 3.1 and later.

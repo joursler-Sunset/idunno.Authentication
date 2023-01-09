@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
+using System.Xml;
 using System.Xml.Linq;
 
 using Microsoft.AspNetCore.Authentication;
@@ -20,7 +25,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-
 using Xunit;
 
 namespace idunno.Authentication.SharedKey.Test
@@ -786,7 +790,17 @@ namespace idunno.Authentication.SharedKey.Test
             var mutatingHttpMessageHandler = new RequestMutatingHandler(async (request) =>
             {
                 await request.Content.ReadAsStringAsync();
-                request.Content = new StringContent("ChangedContent");
+                // If we change the content the MD5 header gets removed, so we need to mutate the MD5 header
+                byte[] mutatedMD5Value = request.Content.Headers.ContentMD5;
+                if (mutatedMD5Value[0] < 255)
+                {
+                    mutatedMD5Value[0]++;
+                }
+                else
+                {
+                    mutatedMD5Value[0] = 0x00;
+                }
+                request.Content.Headers.ContentMD5 = mutatedMD5Value;
             })
             {
                 InnerHandler = server.CreateHandler()
@@ -1037,6 +1051,440 @@ namespace idunno.Authentication.SharedKey.Test
             };
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AuthorizedRequestWithUnresolvedKeyIdentifierReturningNullReturnsUnauthorized()
+        {
+            const string keyId = "keyid";
+            byte[] keyForKeyId = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(keyForKeyId);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    return null;
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(keyId, keyForKeyId)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AuthorizedRequestWithUnresolvedKeyIdentifierReturningAnEmptyArrayReturnsUnauthorized()
+        {
+            const string keyId = "keyid";
+            byte[] keyForKeyId = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(keyForKeyId);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    return Array.Empty<byte>();
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(keyId, keyForKeyId)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task InvalidAuthorizationFormatReturnsUnauthorized()
+        {
+            const string knownKeyId = "keyid";
+            byte[] keyForKeyId = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(keyForKeyId);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyId) =>
+                {
+                    if (keyId == knownKeyId)
+                    {
+                        return keyForKeyId;
+                    }
+                    else
+                    {
+                        return Array.Empty<byte>();
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var mutatingHttpMessageHandler = new RequestMutatingHandler((request) =>
+            {
+                var existingAuthenticationHeaderScheme = request.Headers.Authorization.Scheme;
+                var existingAuthenticationHeaderValue = request.Headers.Authorization.Parameter;
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(existingAuthenticationHeaderScheme,
+                                                                                                      existingAuthenticationHeaderValue.Replace(":", string.Empty, StringComparison.OrdinalIgnoreCase));
+            })
+            {
+                InnerHandler = server.CreateHandler()
+            };
+
+            var sharedKeyHttpMessageHandler = new SharedKeyHttpMessageHandler(knownKeyId, keyForKeyId)
+            {
+                InnerHandler = mutatingHttpMessageHandler
+            };
+
+            using var httpClient = new HttpClient(sharedKeyHttpMessageHandler)
+            {
+                BaseAddress = server.BaseAddress
+            };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task MissingSignatureReturnsUnauthorized()
+        {
+            const string knownKeyId = "keyid";
+            byte[] keyForKeyId = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(keyForKeyId);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyId) =>
+                {
+                    if (keyId == knownKeyId)
+                    {
+                        return keyForKeyId;
+                    }
+                    else
+                    {
+                        return Array.Empty<byte>();
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var mutatingHttpMessageHandler = new RequestMutatingHandler((request) =>
+            {
+                var existingAuthenticationHeaderScheme = request.Headers.Authorization.Scheme;
+                var existingAuthenticationHeaderValue = request.Headers.Authorization.Parameter;
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(existingAuthenticationHeaderScheme,
+                                                                                                      "keyid:");
+            })
+            {
+                InnerHandler = server.CreateHandler()
+            };
+
+            var sharedKeyHttpMessageHandler = new SharedKeyHttpMessageHandler(knownKeyId, keyForKeyId)
+            {
+                InnerHandler = mutatingHttpMessageHandler
+            };
+
+            using var httpClient = new HttpClient(sharedKeyHttpMessageHandler)
+            {
+                BaseAddress = server.BaseAddress
+            };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task InvalidBase64InSignatureReturnsUnauthorized()
+        {
+            const string knownKeyId = "keyid";
+            byte[] keyForKeyId = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(keyForKeyId);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyId) =>
+                {
+                    if (keyId == knownKeyId)
+                    {
+                        return keyForKeyId;
+                    }
+                    else
+                    {
+                        return Array.Empty<byte>();
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var mutatingHttpMessageHandler = new RequestMutatingHandler((request) =>
+            {
+                var existingAuthenticationHeaderScheme = request.Headers.Authorization.Scheme;
+                var existingAuthenticationHeaderValue = request.Headers.Authorization.Parameter;
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(existingAuthenticationHeaderScheme,
+                                                                                                      knownKeyId + ":%InvalidBase64%");
+            })
+            {
+                InnerHandler = server.CreateHandler()
+            };
+
+            var sharedKeyHttpMessageHandler = new SharedKeyHttpMessageHandler(knownKeyId, keyForKeyId)
+            {
+                InnerHandler = mutatingHttpMessageHandler
+            };
+
+            using var httpClient = new HttpClient(sharedKeyHttpMessageHandler)
+            {
+                BaseAddress = server.BaseAddress
+            };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task FailureInValidateSharedKeyReturnsUnauthorized()
+        {
+            const string knownKeyId = "keyid";
+            byte[] knownKey = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(knownKey);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    if (keyID == knownKeyId)
+                    {
+                        return knownKey;
+                    }
+                    else
+                    {
+                        return Array.Empty<byte>();
+                    }
+                };
+                o.Events = new SharedKeyAuthenticationEvents
+                {
+                    OnValidateSharedKey = (context) =>
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(
+                            "keyId",
+                            context.KeyId,
+                            ClaimValueTypes.String,
+                            context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Fail("Something went wrong");
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(knownKeyId, knownKey)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SuccessInValidateSharedKeyReturnsOkAndAttachesPrincipal()
+        {
+            const string knownKeyId = "keyid";
+            const string KeyIdClaimName = "keyId";
+            byte[] knownKey = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(knownKey);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    if (keyID == knownKeyId)
+                    {
+                        return knownKey;
+                    }
+                    else
+                    {
+                        return Array.Empty<byte>();
+                    }
+                };
+                o.Events = new SharedKeyAuthenticationEvents
+                {
+                    OnValidateSharedKey = (context) =>
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(
+                            KeyIdClaimName,
+                            context.KeyId,
+                            ClaimValueTypes.String,
+                            context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(knownKeyId, knownKey)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Equal("text/xml", response.Content.Headers.ContentType.MediaType);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.NotNull(responseBody);
+
+            var responseElement = XElement.Parse(responseBody);
+
+            var actual = responseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == KeyIdClaimName);
+            Assert.Single(actual);
+            Assert.Equal(knownKeyId, actual.First().Value);
+            Assert.Single(responseElement.Elements("claim"));
+        }
+
+        [Fact]
+        public async Task ExceptionInKeyResolverUnauthorizedAndDivertsThroughAuthenticationFailed()
+        {
+            const string knownKeyId = "keyid";
+            const string KeyIdClaimName = "keyId";
+            const string ExceptionMessage = "KeyResolutionException";
+
+            bool authenticationFailedCalled = false;
+            Exception exceptionRaised = null;
+
+
+            byte[] knownKey = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(knownKey);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    throw new Exception(ExceptionMessage);
+                };
+                o.Events = new SharedKeyAuthenticationEvents
+                {
+                    OnValidateSharedKey = (context) =>
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(
+                            KeyIdClaimName,
+                            context.KeyId,
+                            ClaimValueTypes.String,
+                            context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = (context) =>
+                    {
+                        authenticationFailedCalled = true;
+                        exceptionRaised = context.Exception;
+                        context.Fail(exceptionRaised);
+                        return Task.CompletedTask;
+
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(knownKeyId, knownKey)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.True(authenticationFailedCalled);
+            Assert.NotNull(exceptionRaised);
+            Assert.Equal(ExceptionMessage, exceptionRaised.Message);
+        }
+
+        [Fact]
+        public async Task ExceptionInOnValidateSharedKeyReturnsUnauthorizedAndDivertsThroughAuthenticationFailed()
+        {
+            const string knownKeyId = "keyid";
+            const string ExceptionMessage = "ValidateKeyException";
+
+            bool authenticationFailedCalled = false;
+            Exception exceptionRaised = null;
+
+
+            byte[] knownKey = new byte[64];
+            using var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(knownKey);
+
+            using var host = await CreateHost(o => {
+                o.KeyResolver = (keyID) =>
+                {
+                    {
+                        if (keyID == knownKeyId)
+                        {
+                            return knownKey;
+                        }
+                        else
+                        {
+                            return Array.Empty<byte>();
+                        }
+                    };
+                };
+                o.Events = new SharedKeyAuthenticationEvents
+                {
+                    OnValidateSharedKey = (context) =>
+                    {
+                        throw new Exception(ExceptionMessage);
+                    },
+                    OnAuthenticationFailed = (context) =>
+                    {
+                        authenticationFailedCalled = true;
+                        exceptionRaised = context.Exception;
+                        context.Fail(exceptionRaised);
+                        return Task.CompletedTask;
+
+                    }
+                };
+            });
+
+            using var server = host.GetTestServer();
+            var clientHandlerPipeline = new SharedKeyHttpMessageHandler(knownKeyId, knownKey)
+            {
+                InnerHandler = server.CreateHandler()
+            };
+            using var httpClient = new HttpClient(clientHandlerPipeline) { BaseAddress = server.BaseAddress };
+
+            var response = await httpClient.GetAsync("https://localhost/");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.True(authenticationFailedCalled);
+            Assert.NotNull(exceptionRaised);
+            Assert.Equal(ExceptionMessage, exceptionRaised.Message);
         }
 
         private static async Task<IHost> CreateHost(

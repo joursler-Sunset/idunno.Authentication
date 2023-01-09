@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' != 'CodeQL'">
@@ -31,5 +31,9 @@
 
   <ItemGroup>
     <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 </Project>

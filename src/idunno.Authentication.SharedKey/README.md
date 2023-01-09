@@ -38,7 +38,7 @@ using (var httpClient = new HttpClient(authenticationHandler))
 }
 ```
 
-There is an alternative constructor for `SharedKeyHttpMessageHandler` which takes the key as a byte array. 
+There is an alternative constructor for `SharedKeyHttpMessageHandler` which takes the key as a byte array.
 
 If you are making calls from an ASP.NET application you can configure the [HttpClientFactory](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests) to 
 [add a handler for a named or typed client](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-6.0#configure-the-httpmessagehandler).
@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(SharedKeyAuthenticationDefaults.Authenticatio
         options.KeyResolver = keyResolver.GetKey;
         options.Events = new SharedKeyAuthenticationEvents
         {
-            OnValidateSharedKey = IdentityBuilder.OnValidateSharedKey
+            OnValidateSharedKey = /* Your validation function */
         };
     });
 ```
@@ -75,7 +75,7 @@ Authorization is then enforced using the normal [ASP.NET authorization mechanism
 
 ### <a name="keyResolution"></a>Key Resolution
 
-Your key resolution function must have the signature `byte[] FunctionName(string keyId)`. If the keyID specified is unknown, return an empty array.
+Your key resolution function must have the signature `byte[] FunctionName(string keyId)`. If the keyID specified is unknown, return either null or an empty array.
 
 ```c#
 public byte[] GetKey(string keyId)
@@ -138,8 +138,10 @@ services.AddAuthentication()
 
 ## How requests are canonicalised and signed
 
-All authenticated requests for an endpoint protected with SharedKey authentication must include the standard HTTP `Authorization` header and a standard HTTP `Date` header.
-If these headers are missing any requests to an endpoint that requires SharedKey authorization will fail.
+All authenticated requests for an endpoint protected with SharedKey authentication **must** include the standard HTTP `Authorization` header and a standard HTTP `Date` header.
+If these headers are missing any requests to an endpoint that requires SharedKey authorization will fail. 
+
+Query parameters cannot include a newline (\n) characters or commas.
 
 ### Specifying the Date header
 All authorized requests must include the Coordinated Universal Time (UTC) timestamp in request. This timestamp must be included the standard HTTP/HTTPS Date header.
@@ -161,40 +163,41 @@ Authorization="SharedKey <Key Identifier>:<Signature>"
 ### Building a signature
 
 To build a signature various properties of the request must be build into a representation of the request. The request representation is built by constructing 
-a string from the following parts of the request, in the order listed, with each item followed by a newline character, separated by a newline (\n) character
+a string from the following parts of the request, in the order listed, with each item followed by a newline (\n) character as indicated.
 
-* The HTTP verb for the request, in uppercase.
-* The Content-Encoding header value for the request if present, otherwise an empty string.
-* The Content-Language header value for the request if present, otherwise an empty string.
-* The Content-Length header value for the request if present, otherwise an 0 followed by a newline (\n).
-* The Content-MD5 header value for the request if present, which must be present if the request has content, otherwise an empty string.
-* The Content-Type header value for the request if present, otherwise an empty string.
-* The Date header value for the request if present, which much be present.
-* The If-Modified-Since header value for the request if present, otherwise an empty string.
-* The If-Match header value for the request if present, otherwise an empty string.
-* The If-None-Match header value for the request if present, otherwise an empty string.
-* The If-Unmodified-Since header value for the request if present, otherwise an empty string.
-* The Range header value for the request if present, otherwise an empty string.
+* The HTTP verb for the request, in uppercase, followed by a newline (\n), then
+* The Content-Encoding header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The Content-Language header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The Content-Length header value for the request if present, otherwise an 0 followed by a newline (\n), then
+* The Content-MD5 header value for the request if present, which must be present if the request has content, otherwise an empty string, followed by a newline (\n), then
+* The Content-Type header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The Date header value for the request if present, *which must be present in a request*, followed by a newline (\n), then
+* The If-Modified-Since header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The If-Match header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The If-None-Match header value for the request if present, otherwise an empty string, followed by a newline (\n), then
+* The If-Unmodified-Since header value for the request if present, otherwise an empty string, followed by a newline (\n), then finally
+* The Range header value for the request if present, otherwise an empty string, followed by a newline (\n).
 
-This representation is then appended with a canonicalized representation of the resource being requested.
+This request properties representation is then appended with a canonicalised resource.
 
-The canonicalized resource is built by constructing a string as follows
+The canonicalised resource is built by constructing a string as follows
 
-* Start a string with the resource's encoded URI path, beginning with the forward slash (/) character, without query parameters
-* Sort the query parameter names in alphabetical order, treating a query parameter that is not a key/value pair as having a null parameter name and coming 
+* Start a string with the resource's encoded URI path, beginning with the forward slash (/) character, excluding any query parameters
+* Query parameter names are normalized to lower case
+* Sort the normalized, lower case, query parameter names in alphabetical order, treating any query parameter that is not a key/value pair as having a empty string as the parameter name and coming 
 first in any sorting
 * For each query parameter name
   * Append a newline (\n) character to the resource string
   * Append the parameter name to the resource string, followed by a colon (:)
-  * Append the parameter value to the resource string. If a parameter has multiple values the values should be sorted lexicographically and append as
+  * Append the parameter value to the resource string. If a parameter has multiple values the values should be sorted lexicographically and appended as
   a comma separated list
 
-Note that this formatting excludes the ability to use newline (\n) characters or commas in query parameters.
+**Note that this canonicalisation method means you cannot use a newline (\n) character or commas in query parameters.**
 
 To summarize, a signature is calculated over the following representation of a request.
 
 ```
-propertyStringToSign = VERB + "\n" +  
+canonicalisedRequest = VERB + "\n" +  
                        Content-Encoding + "\n" +  
                        Content-Language + "\n" +  
                        Content-Length + "\n" +  
@@ -206,10 +209,10 @@ propertyStringToSign = VERB + "\n" +
                        If-None-Match + "\n" +  
                        If-Unmodified-Since + "\n" +  
                        Range + "\n" +  
-                       CanonicalizedResource
+                       CanonicalisedResource
 ```
 
-For example a GET request made to https://localhost/path/resource?a=1&a=2&b=1&A=3&c with a request content of `Content`, made on 1st January at midnight would product the following representation
+For example a GET request made to https://localhost/path/resource?a=1&a=2&b=1&A=3&c with a request content of `Content`, made on 1st January 2022 at midnight would product the following representation
 
 ```
 GET\n\n\n7\nmgNkuembtIDdJeHwKEyFVQ==\ntext/plain; charset=utf-8\nSat, 01 Jan 2022 00:00:00 GMT\n\n\n\n\n\n/path/resource\n:c\na:1,2,3\nb:1
