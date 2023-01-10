@@ -47,20 +47,6 @@ stages:
         version: '6.0.x'
         packageType: 'sdk'
 
-    # NetCoreApp 3.0 & 3.1 Support
-    - task: UseDotNet@2
-      displayName: 'Install .NET Core 3.1.x SDK'
-      inputs:
-        version: '3.1.x'
-        packageType: 'sdk'
-
-    # NetStandard 2.0 Support for Basic Auth
-    - task: UseDotNet@2
-      displayName: 'Install .NET Core 2.1.x runtime'
-      inputs:
-        version: '2.1.x'
-        packageType: 'runtime'
-
     # Install nerdbank versioning tool
     # https://github.com/dotnet/Nerdbank.GitVersioning/blob/master/doc/nbgv-cli.md
     - task: DotNetCoreCLI@2
