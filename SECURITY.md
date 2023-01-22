@@ -4,10 +4,10 @@
 
 Only the latest version of the libraries are supported.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.2.x   | :white_check_mark: |
-| < 2.2   | :x:                |
+| Version    | Supported          |
+| ---------- | ------------------ |
+| 2.3.0      | :white_check_mark: |
+| <= 2.2.0   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -22,10 +22,13 @@ Please reproduce your bug on the latest supported version published on nuget.org
 
 ## Disclosure Policy
 
-When diagnosing a security bug the following steps are
+When diagnosing and fixing a security bug the process is as follows:
 
   * Confirm the problem and determine the affected versions.
   * Audit code to find any potential similar problems.
-  * Prepare fixes for all releases still under maintenance. These fixes will be released as fast as possible to nuget.
+  * Prepare fixes for the latest released package. 
+  * Build and test fixes in private.
+  * Release to nuget after successful testing.
+  * Create advisory so dependabot and others will start notifications.
 
 I would prefer report remain confidential until a fix is released, or I decide it is not an issue, but I acknowledge that some have other feelings about disclosure policies.
