@@ -134,7 +134,8 @@ The `BasicAuthenticationOptions` class contains the `EncodingPreference` propert
 * `EncodingPreference.Unicode` will only decode using Unicode
 * `EncodingPreference.Latin1` will only attempt decoding using ISO-8859-1/Latin1.
 * `EncodingPreferencePreferUnicode` will first attempt to decode using Unicode, and if an exception is thrown during the Unicode decoding it will then attempt to decode using ISO-8859-1/Latin1.
-* `EncodingPreferencePreferLatin` will first attempt to decode using ISO-8859-1/Latin1, and if an exception is thrown during the Unicode decoding it will then attempt to decode using Unicode.
+
+There is no fall back from Latin1 to Unicode as every possible byte sequence is a valid Latin1 string, so it will always decode "successfully", but not correctly if fed UTF8 encoded strings.
 
 RFC 7616 also allows [the server to specify the charset/encoding it accepts](https://www.rfc-editor.org/rfc/rfc7617#section-2.1). To enable this set the `AdvertiseEncodingPreference` flag on options to true.
 

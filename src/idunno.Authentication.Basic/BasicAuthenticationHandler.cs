@@ -21,7 +21,7 @@ namespace idunno.Authentication.Basic
 
         private readonly UTF8Encoding _utf8ValidatingEncoding = new UTF8Encoding(false, true);
 
-        private readonly Encoding _iso88591Encoding = Encoding.GetEncoding("ISO-8859-1");
+        private readonly Encoding _iso88591ValidatingEncoding = Encoding.GetEncoding("ISO-8859-1",new EncoderExceptionFallback(), new DecoderExceptionFallback());
 
         public BasicAuthenticationHandler(
             IOptionsMonitor<BasicAuthenticationOptions> options,
@@ -90,7 +90,7 @@ namespace idunno.Authentication.Basic
                     }
                     else if (Options.EncodingPreference == EncodingPreference.Latin1)
                     {
-                        decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
+                        decodedCredentials = _iso88591ValidatingEncoding.GetString(base64DecodedCredentials);
                     }
                     else if (Options.EncodingPreference == EncodingPreference.PreferUnicode)
                     {
@@ -100,18 +100,7 @@ namespace idunno.Authentication.Basic
                         }
                         catch
                         {
-                            decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
-                        }
-                    }
-                    else if (Options.EncodingPreference == EncodingPreference.PreferLatin1)
-                    {
-                        try
-                        {
-                            decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
-                        }
-                        catch
-                        {
-                            decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
+                            decodedCredentials = _iso88591ValidatingEncoding.GetString(base64DecodedCredentials);
                         }
                     }
                     else
@@ -204,7 +193,6 @@ namespace idunno.Authentication.Basic
                                 headerValue+= ", charset=\"UTF-8\"";
                                 break;
                             case EncodingPreference.Latin1:
-                            case EncodingPreference.PreferLatin1:
                                 headerValue += ", charset=\"ISO-8859-1\"";
                                 break;
                             default:

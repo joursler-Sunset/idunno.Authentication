@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using Microsoft.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -17,10 +17,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 using Xunit;
-using System.Security.Claims;
-using Xunit.Sdk;
 
 namespace idunno.Authentication.Basic.Test
 {
@@ -183,26 +182,6 @@ namespace idunno.Authentication.Basic.Test
             Assert.Equal("realm=\"realm\",", parameters[0]);
             Assert.Equal("charset=\"ISO-8859-1\"", parameters[1]);
         }
-
-        [Fact]
-        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmAndUnicodeCharsetWhenNoAuthenticateHeaderIsPresentAndAdvertiseEncodingIsTrueAndEncodingPreferenceIsPreferLatin1()
-        {
-            var server = CreateServer(new BasicAuthenticationOptions
-            {
-                Realm = "realm",
-                AdvertiseEncodingPreference = true,
-                EncodingPreference = EncodingPreference.PreferLatin1
-            });
-            var response = await server.CreateClient().GetAsync("https://example.com/challenge");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Single(response.Headers.WwwAuthenticate);
-            Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
-
-            var parameters = response.Headers.WwwAuthenticate.First().Parameter.Split(' ');
-            Assert.Equal("realm=\"realm\",", parameters[0]);
-            Assert.Equal("charset=\"ISO-8859-1\"", parameters[1]);
-        }
-
 
         [Fact]
         public async Task ChallengePathReturnsUnauthorizedWhenAnAuthorizeHeaderIsSentAndFailsValidation()
@@ -567,47 +546,6 @@ namespace idunno.Authentication.Basic.Test
             var server = CreateServer(new BasicAuthenticationOptions
             {
                 EncodingPreference = EncodingPreference.Latin1,
-                Events = new BasicAuthenticationEvents
-                {
-                    OnValidateCredentials = context =>
-                    {
-                        var claims = new[]
-                            {
-                                new Claim(
-                                    ClaimTypes.Name,
-                                    context.Username,
-                                    ClaimValueTypes.String,
-                                    context.Options.ClaimsIssuer)
-                            };
-                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                        context.Success();
-
-                        return Task.CompletedTask;
-                    }
-                }
-            });
-
-            string credentials = $"{Expected}:pa§§word";
-            byte[] credentialsAsBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.ToCharArray());
-            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
-
-            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/whoami", encodedCredentials);
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.NotNull(transaction.ResponseElement);
-            var actual = transaction.ResponseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
-            Assert.Single(actual);
-            Assert.Equal(Expected, actual.First().Value);
-            Assert.Single(transaction.ResponseElement.Elements("claim"));
-        }
-
-        [Fact]
-        public async Task ValidateAuthenticationSucceedsWhenUsingPreferLatin1DecodingAndUserNameContainsSectionSign()
-        {
-            const string Expected = "User§Name";
-
-            var server = CreateServer(new BasicAuthenticationOptions
-            {
-                EncodingPreference = EncodingPreference.PreferLatin1,
                 Events = new BasicAuthenticationEvents
                 {
                     OnValidateCredentials = context =>

@@ -26,12 +26,5 @@ namespace idunno.Authentication.Basic
         /// Any Unicode exceptions will be swallowed, only exceptions from ISO-8859-1/Latin1 decoding will be thrown.
         /// </summary>
         PreferUnicode = 2,
-
-        /// <summary>
-        /// Indicates that ISO-8859-1/Latin1 should be tried first when decoding user names and passwords,
-        /// and if an exception is thrown Unicode decoding will then be tried.
-        ///
-        /// Any ISO-8859-1 exceptions will be swallowed, only exceptions from Unicode decoding will be thrown.
-        PreferLatin1 = 3
     }
 }

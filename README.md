@@ -41,6 +41,7 @@ Azure Artifacts holds a [feed of current dev builds](https://dev.azure.com/idunn
 
 | Version | Notes |
 |---------|-------|
+|2.3.1    | Added support for credential encoding character sets to latin1 support to Basic Authentication. |
 |2.3.0    | Added Shared key authentication<br>Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, ASP.NET 5.0, 6.0 and 7.0 |
 |2.2.3    | Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, .NET 5.0 and .NET 6.0 |
 |2.2.2    | Basic authentication now [multi-targets](https://github.com/blowdart/idunno.Authentication/issues/46) ASP.NET Core 2.1, 3.0 and 3.1 |
