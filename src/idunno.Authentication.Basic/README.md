@@ -118,7 +118,7 @@ to show there's been a successful authentication.
 
 Of course you'd never implement such a simple validation mechanism would you? No? Good. Have a cookie.
 
-If you want to use Basic authentication within an Ajax application then it you may want to stop the browser prompting for a username and password. 
+If you want to use Basic authentication within an Ajax application then it you may want to stop the browser prompting for a user name and password. 
 This prompt happens when a `WWWAuthenticate` header is sent, you can suppress this header by setting the `SuppressWWWAuthenticateHeader` flag on options.
 
 The handler will throw an exception if wired up in a site not running on HTTPS and will refuse to respond to the challenge flow 
@@ -126,6 +126,20 @@ which ends up prompting the browser to ask for a user name and password. You can
 setting `AllowInsecureProtocol` to `true` in the handler options. If you do this you deserve everything you get. If you're 
 using a non-interactive client, and are sending a user name and password to a server over HTTP the handler will not throw and
 will process the authentication header because frankly it's too late, you've sent everything in plain text, what's the point?
+
+The original BasicAuth RFC never specifically set a character set for the encoding/decoding of the user name and password, whereas RFC 7616 just requires it to be compatible with US ASCII 
+(which limits the encoding to Unicode) so various clients differ in what they do.
+
+The `BasicAuthenticationOptions` class contains the `EncodingPreference` property to allow you to select from four possible values, `Unicode`, `Latin1`, `PeferUnicode` and `PreferLatin1`.
+* `EncodingPreference.Unicode` will only decode using Unicode
+* `EncodingPreference.Latin1` will only attempt decoding using ISO-8859-1/Latin1.
+* `EncodingPreferencePreferUnicode` will first attempt to decode using Unicode, and if an exception is thrown during the Unicode decoding it will then attempt to decode using ISO-8859-1/Latin1.
+* `EncodingPreferencePreferLatin` will first attempt to decode using ISO-8859-1/Latin1, and if an exception is thrown during the Unicode decoding it will then attempt to decode using Unicode.
+
+RFC 7616 also allows [the server to specify the charset/encoding it accepts](https://www.rfc-editor.org/rfc/rfc7617#section-2.1). To enable this set the `AdvertiseEncodingPreference` flag on options to true.
+
+There is no ability for a client to specify the encoding as part if the user name or password as suggested by [RFC2616, section 2.1](https://www.rfc-editor.org/rfc/rfc2047#section-2), as that way lies madness 
+and no sane client does this.
 
 ## Accessing a service inside your delegate
 

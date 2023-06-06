@@ -1,4 +1,7 @@
-﻿[*.cs]
+﻿root = true
+spelling_exclusion_path = .\exclusion.dic
+
+[*.cs]
 
 # IDE0008: Use explicit type
 csharp_style_var_when_type_is_apparent = true:warning

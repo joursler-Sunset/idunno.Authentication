@@ -21,6 +21,8 @@ namespace idunno.Authentication.Basic
 
         private readonly UTF8Encoding _utf8ValidatingEncoding = new UTF8Encoding(false, true);
 
+        private readonly Encoding _iso88591Encoding = Encoding.GetEncoding("ISO-8859-1");
+
         public BasicAuthenticationHandler(
             IOptionsMonitor<BasicAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -82,7 +84,40 @@ namespace idunno.Authentication.Basic
 
                 try
                 {
-                    decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
+                    if (Options.EncodingPreference == EncodingPreference.Unicode)
+                    {
+                        decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
+                    }
+                    else if (Options.EncodingPreference == EncodingPreference.Latin1)
+                    {
+                        decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
+                    }
+                    else if (Options.EncodingPreference == EncodingPreference.PreferUnicode)
+                    {
+                        try
+                        {
+                            decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
+                        }
+                        catch
+                        {
+                            decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
+                        }
+                    }
+                    else if (Options.EncodingPreference == EncodingPreference.PreferLatin1)
+                    {
+                        try
+                        {
+                            decodedCredentials = _iso88591Encoding.GetString(base64DecodedCredentials);
+                        }
+                        catch
+                        {
+                            decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(Options), "Unknown EncodingPrefence");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -160,6 +195,23 @@ namespace idunno.Authentication.Basic
                 if (!Options.SuppressWWWAuthenticateHeader)
                 {
                     var headerValue = _Scheme + $" realm=\"{Options.Realm}\"";
+                    if (Options.AdvertiseEncodingPreference)
+                    {
+                        switch (Options.EncodingPreference)
+                        {
+                            case EncodingPreference.Unicode:
+                            case EncodingPreference.PreferUnicode:
+                                headerValue+= ", charset=\"UTF-8\"";
+                                break;
+                            case EncodingPreference.Latin1:
+                            case EncodingPreference.PreferLatin1:
+                                headerValue += ", charset=\"ISO-8859-1\"";
+                                break;
+                            default:
+                                break;
+
+                        }
+                    }
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
                 }
             }

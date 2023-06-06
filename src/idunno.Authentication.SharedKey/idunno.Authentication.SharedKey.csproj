@@ -13,11 +13,15 @@
   </ItemGroup>
 
   <!-- nuget readme support -->
+  <PropertyGroup>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\"/>
-  </ItemGroup>
+</ItemGroup>
 
-  <Choose>
+
+	<Choose>
     <When Condition=" '$(Configuration)'=='Debug' ">
       <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

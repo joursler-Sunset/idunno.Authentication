@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Xunit;
 using System.Security.Claims;
+using Xunit.Sdk;
 
 namespace idunno.Authentication.Basic.Test
 {
@@ -77,7 +78,7 @@ namespace idunno.Authentication.Basic.Test
 
 
         [Fact]
-        public async Task ProtectedPathReturnsUnauthorizedWithWWWAuthenicateHeaderAndScheme()
+        public async Task ProtectedPathReturnsUnauthorizedWithWWWAuthenticateHeaderAndScheme()
         {
             var server = CreateServer(new BasicAuthenticationOptions());
             var response = await server.CreateClient().GetAsync("https://example.com/unauthorized");
@@ -101,19 +102,19 @@ namespace idunno.Authentication.Basic.Test
         }
 
         [Fact]
-        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenicateHeaderAndSchemeWhenNoAuthenticateHeaderIsPresent()
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderAndSchemeWhenNoAuthenticateHeaderIsPresent()
         {
             var server = CreateServer(new BasicAuthenticationOptions());
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             Assert.Single(response.Headers.WwwAuthenticate);
             Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
-            Assert.Equal("realm=\"\"", response.Headers.WwwAuthenticate.First().Parameter);
+            Assert.Equal("realm=\"\"", response.Headers.WwwAuthenticate.First().Parameter.ToString());
         }
 
 
         [Fact]
-        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenicateHeaderSchemeAndConfiguredRealmWhenNoAuthenticateHeaderIsPresent()
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmWhenNoAuthenticateHeaderIsPresent()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
@@ -123,11 +124,88 @@ namespace idunno.Authentication.Basic.Test
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             Assert.Single(response.Headers.WwwAuthenticate);
             Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
-            Assert.Equal("realm=\"realm\"", response.Headers.WwwAuthenticate.First().Parameter);
+            Assert.Equal("realm=\"realm\"", response.Headers.WwwAuthenticate.First().Parameter.ToString());
         }
 
         [Fact]
-        public async Task ChallengePathReturnsUnauthorizeWhenAnAuthorizeHeaderIsSentAndFailsValidation()
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmAndUnicodeCharsetWhenNoAuthenticateHeaderIsPresentAndAdvertiseEncodingIsTrueAndEncodingPreferenceIsUnicode()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Realm = "realm",
+                AdvertiseEncodingPreference = true,
+                EncodingPreference = EncodingPreference.Unicode
+            });
+            var response = await server.CreateClient().GetAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Single(response.Headers.WwwAuthenticate);
+            Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
+
+            var parameters = response.Headers.WwwAuthenticate.First().Parameter.Split(' ');
+            Assert.Equal("realm=\"realm\",", parameters[0]);
+            Assert.Equal("charset=\"UTF-8\"", parameters[1]);
+        }
+
+        [Fact]
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmAndUnicodeCharsetWhenNoAuthenticateHeaderIsPresentAndAdvertiseEncodingIsTrueAndEncodingPreferenceIsPreferUnicode()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Realm = "realm",
+                AdvertiseEncodingPreference = true,
+                EncodingPreference = EncodingPreference.PreferUnicode
+            });
+            var response = await server.CreateClient().GetAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Single(response.Headers.WwwAuthenticate);
+            Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
+
+            var parameters = response.Headers.WwwAuthenticate.First().Parameter.Split(' ');
+            Assert.Equal("realm=\"realm\",", parameters[0]);
+            Assert.Equal("charset=\"UTF-8\"", parameters[1]);
+        }
+
+        [Fact]
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmAndUnicodeCharsetWhenNoAuthenticateHeaderIsPresentAndAdvertiseEncodingIsTrueAndEncodingPreferenceIsLatin1()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Realm = "realm",
+                AdvertiseEncodingPreference = true,
+                EncodingPreference = EncodingPreference.Latin1
+            });
+            var response = await server.CreateClient().GetAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Single(response.Headers.WwwAuthenticate);
+            Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
+
+            var parameters = response.Headers.WwwAuthenticate.First().Parameter.Split(' ');
+            Assert.Equal("realm=\"realm\",", parameters[0]);
+            Assert.Equal("charset=\"ISO-8859-1\"", parameters[1]);
+        }
+
+        [Fact]
+        public async Task ChallengePathReturnsUnauthorizedWithWWWAuthenticateHeaderSchemeAndConfiguredRealmAndUnicodeCharsetWhenNoAuthenticateHeaderIsPresentAndAdvertiseEncodingIsTrueAndEncodingPreferenceIsPreferLatin1()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                Realm = "realm",
+                AdvertiseEncodingPreference = true,
+                EncodingPreference = EncodingPreference.PreferLatin1
+            });
+            var response = await server.CreateClient().GetAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Single(response.Headers.WwwAuthenticate);
+            Assert.Equal("Basic", response.Headers.WwwAuthenticate.First().Scheme);
+
+            var parameters = response.Headers.WwwAuthenticate.First().Parameter.Split(' ');
+            Assert.Equal("realm=\"realm\",", parameters[0]);
+            Assert.Equal("charset=\"ISO-8859-1\"", parameters[1]);
+        }
+
+
+        [Fact]
+        public async Task ChallengePathReturnsUnauthorizedWhenAnAuthorizeHeaderIsSentAndFailsValidation()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
@@ -194,7 +272,6 @@ namespace idunno.Authentication.Basic.Test
             Assert.Equal(StatusCodes.Status421MisdirectedRequest, (int)response.StatusCode);
             Assert.Empty(response.Headers.WwwAuthenticate);
         }
-
 
         [Fact]
         public async Task ValidateHandlerWillRespondOnHttpWhenSecurityIsDisabled()
@@ -318,7 +395,7 @@ namespace idunno.Authentication.Basic.Test
         }
 
         [Fact]
-        public async Task ValidateSupressionOfWWWAuthenticationHeader()
+        public async Task ValidateSuppressionOfWWWAuthenticationHeader()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
@@ -429,6 +506,182 @@ namespace idunno.Authentication.Basic.Test
             Assert.Equal(ExceptedExceptionMessage, exceptionRaised.Message);
         }
 
+        [Fact]
+        public async Task ValidateAuthenticationFailsWhenUsingUnicodeDecodingAndPasswordContainsSectionSign()
+        {
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                EncodingPreference = EncodingPreference.Unicode
+            });
+
+            var transaction = await SendAsync(server, "https://example.com/challenge", "username", "§");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAuthenticationSucceedsWhenUsingLatin1DecodingAndPasswordContainsSectionSign()
+        {
+            const string Expected = "UserName";
+
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                EncodingPreference = EncodingPreference.Latin1,
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        var claims = new[]
+                            {
+                                new Claim(
+                                    ClaimTypes.Name,
+                                    context.Username,
+                                    ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer)
+                            };
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                }
+            }) ;
+
+            string credentials = $"{Expected}:pa§§word";
+            byte[] credentialsAsBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.ToCharArray());
+            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
+
+            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/whoami", encodedCredentials);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.ResponseElement);
+            var actual = transaction.ResponseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(actual);
+            Assert.Equal(Expected, actual.First().Value);
+            Assert.Single(transaction.ResponseElement.Elements("claim"));
+        }
+
+        [Fact]
+        public async Task ValidateAuthenticationSucceedsWhenUsingLatin1DecodingAndUserNameContainsSectionSign()
+        {
+            const string Expected = "User§Name";
+
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                EncodingPreference = EncodingPreference.Latin1,
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        var claims = new[]
+                            {
+                                new Claim(
+                                    ClaimTypes.Name,
+                                    context.Username,
+                                    ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer)
+                            };
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            string credentials = $"{Expected}:pa§§word";
+            byte[] credentialsAsBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.ToCharArray());
+            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
+
+            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/whoami", encodedCredentials);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.ResponseElement);
+            var actual = transaction.ResponseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(actual);
+            Assert.Equal(Expected, actual.First().Value);
+            Assert.Single(transaction.ResponseElement.Elements("claim"));
+        }
+
+        [Fact]
+        public async Task ValidateAuthenticationSucceedsWhenUsingPreferLatin1DecodingAndUserNameContainsSectionSign()
+        {
+            const string Expected = "User§Name";
+
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                EncodingPreference = EncodingPreference.PreferLatin1,
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        var claims = new[]
+                            {
+                                new Claim(
+                                    ClaimTypes.Name,
+                                    context.Username,
+                                    ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer)
+                            };
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            string credentials = $"{Expected}:pa§§word";
+            byte[] credentialsAsBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.ToCharArray());
+            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
+
+            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/whoami", encodedCredentials);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.ResponseElement);
+            var actual = transaction.ResponseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(actual);
+            Assert.Equal(Expected, actual.First().Value);
+            Assert.Single(transaction.ResponseElement.Elements("claim"));
+        }
+
+        [Fact]
+        public async Task ValidateAuthenticationSucceedsWhenUsingPreferUnicodeDecodingAndUserNameContainsSectionSign()
+        {
+            const string Expected = "User§Name";
+
+            var server = CreateServer(new BasicAuthenticationOptions
+            {
+                EncodingPreference = EncodingPreference.PreferUnicode,
+                Events = new BasicAuthenticationEvents
+                {
+                    OnValidateCredentials = context =>
+                    {
+                        var claims = new[]
+                            {
+                                new Claim(
+                                    ClaimTypes.Name,
+                                    context.Username,
+                                    ClaimValueTypes.String,
+                                    context.Options.ClaimsIssuer)
+                            };
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                }
+            });
+
+            string credentials = $"{Expected}:pa§§word";
+            byte[] credentialsAsBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(credentials.ToCharArray());
+            var encodedCredentials = Convert.ToBase64String(credentialsAsBytes);
+
+            var transaction = await SendAsyncWithRawHeaderValue(server, "https://example.com/whoami", encodedCredentials);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.NotNull(transaction.ResponseElement);
+            var actual = transaction.ResponseElement.Elements("claim").Where(claim => claim.Attribute("Type").Value == ClaimTypes.Name);
+            Assert.Single(actual);
+            Assert.Equal(Expected, actual.First().Value);
+            Assert.Single(transaction.ResponseElement.Elements("claim"));
+        }
+
         private static TestServer CreateServer(
             BasicAuthenticationOptions configureOptions,
             Func<HttpContext, Func<Task>, Task> handler = null,
@@ -501,6 +754,8 @@ namespace idunno.Authentication.Basic.Test
                         options.Events = configureOptions.Events;
                         options.Realm = configureOptions.Realm;
                         options.SuppressWWWAuthenticateHeader = configureOptions.SuppressWWWAuthenticateHeader;
+                        options.AdvertiseEncodingPreference = configureOptions.AdvertiseEncodingPreference;
+                        options.EncodingPreference= configureOptions.EncodingPreference;
                     });
                 }
                 else

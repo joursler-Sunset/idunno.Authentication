@@ -59,13 +59,10 @@ namespace idunno.Authentication.Basic
         /// The authentication scheme controls the browser UI and allows the browser to
         /// authenticate in the correct manner, popping up a UI to allow for user name and password.
         /// Some users may want to suppress this behaviour for JavaScript XMLHttpRequest requests.
-        /// Setting this flag to True suppresses the WWW-Authenticate header and thus the browser login prompt, just sending a
-        /// 401 status code you must react to yourself.
+        /// Setting this flag to true suppresses the WWW-Authenticate header and thus the browser login prompt, just sending a
+        /// 401 status code that you must react to yourself in your client code.
         /// </remarks>
-        public bool SuppressWWWAuthenticateHeader
-        {
-            get; set;
-        }
+        public bool SuppressWWWAuthenticateHeader { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a flag indicating if the handler will prompt for authentication on HTTP requests.
@@ -73,10 +70,24 @@ namespace idunno.Authentication.Basic
         /// <remarks>
         /// If you set this to true you're a horrible person.
         /// </remarks>
-        public bool AllowInsecureProtocol
-        {
-            get; set;
-        }
+        public bool AllowInsecureProtocol { get; set; } = false;
+
+        /// <summary>
+        /// Sets or sets a value indicating which Encoding method(s) should be used when
+        /// decoding the user name and/or password specified on the incoming Authorization header.
+        /// </summary>
+        /// <remarks>
+        /// The default value for this setting is Unicode.
+        /// </remarks>
+        public EncodingPreference EncodingPreference { get; set; } = EncodingPreference.Unicode;
+
+        /// <summary>
+        /// Sets or sets a value indicating whether the <see cref="EncodingPreference"/>
+        /// is appended to the WWW-Authenticate header sent to the client.
+        /// If either of the Prefer values are used for encoding preference only the
+        /// first encoding will be advertised.
+        /// </summary>
+        public bool AdvertiseEncodingPreference { get; set; } = false;
 
         /// <summary>
         /// The object provided by the application to process events raised by the basic authentication middleware.
