@@ -10,9 +10,9 @@ namespace idunno.Authentication.Basic
     public enum EncodingPreference
     {
         /// <summary>
-        /// Indicates that Unicode should be the only encoding tried when decoding user names and passwords.
+        /// Indicates that UTF8 should be the only encoding tried when decoding user names and passwords.
         /// </summary>
-        Unicode = 0,
+        Utf8 = 0,
 
         /// <summary>
         /// Indicates that ISO-8859-1/Latin1 should be the only encoding tried when decoding user names and passwords.
@@ -20,11 +20,11 @@ namespace idunno.Authentication.Basic
         Latin1 = 1,
 
         /// <summary>
-        /// Indicates that Unicode should be tried first when decoding user names and passwords,
+        /// Indicates that UTF8 should be tried first when decoding user names and passwords,
         /// and if an exception is thrown ISO-8859-1/Latin1 decoding will then be tried.
         ///
-        /// Any Unicode exceptions will be swallowed, only exceptions from ISO-8859-1/Latin1 decoding will be thrown.
+        /// Any UTF8 exceptions will be swallowed, only exceptions from ISO-8859-1/Latin1 decoding will be thrown.
         /// </summary>
-        PreferUnicode = 2,
+        PreferUtf8 = 2,
     }
 }

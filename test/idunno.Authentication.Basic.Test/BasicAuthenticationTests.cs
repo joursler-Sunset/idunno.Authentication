@@ -133,7 +133,7 @@ namespace idunno.Authentication.Basic.Test
             {
                 Realm = "realm",
                 AdvertiseEncodingPreference = true,
-                EncodingPreference = EncodingPreference.Unicode
+                EncodingPreference = EncodingPreference.Utf8
             });
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -152,7 +152,7 @@ namespace idunno.Authentication.Basic.Test
             {
                 Realm = "realm",
                 AdvertiseEncodingPreference = true,
-                EncodingPreference = EncodingPreference.PreferUnicode
+                EncodingPreference = EncodingPreference.PreferUtf8
             });
             var response = await server.CreateClient().GetAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -486,11 +486,11 @@ namespace idunno.Authentication.Basic.Test
         }
 
         [Fact]
-        public async Task ValidateAuthenticationFailsWhenUsingUnicodeDecodingAndPasswordContainsSectionSign()
+        public async Task ValidateAuthenticationFailsWhenUsingUtf8DecodingAndPasswordContainsSectionSign()
         {
             var server = CreateServer(new BasicAuthenticationOptions
             {
-                EncodingPreference = EncodingPreference.Unicode
+                EncodingPreference = EncodingPreference.Utf8
             });
 
             var transaction = await SendAsync(server, "https://example.com/challenge", "username", "§");
@@ -580,13 +580,13 @@ namespace idunno.Authentication.Basic.Test
         }
 
         [Fact]
-        public async Task ValidateAuthenticationSucceedsWhenUsingPreferUnicodeDecodingAndUserNameContainsSectionSign()
+        public async Task ValidateAuthenticationSucceedsWhenUsingPreferUtf8DecodingAndUserNameContainsSectionSign()
         {
             const string Expected = "User§Name";
 
             var server = CreateServer(new BasicAuthenticationOptions
             {
-                EncodingPreference = EncodingPreference.PreferUnicode,
+                EncodingPreference = EncodingPreference.PreferUtf8,
                 Events = new BasicAuthenticationEvents
                 {
                     OnValidateCredentials = context =>

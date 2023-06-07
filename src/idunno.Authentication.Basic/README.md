@@ -127,13 +127,14 @@ setting `AllowInsecureProtocol` to `true` in the handler options. If you do this
 using a non-interactive client, and are sending a user name and password to a server over HTTP the handler will not throw and
 will process the authentication header because frankly it's too late, you've sent everything in plain text, what's the point?
 
-The original BasicAuth RFC never specifically set a character set for the encoding/decoding of the user name and password, whereas RFC 7616 just requires it to be compatible with US ASCII 
-(which limits the encoding to Unicode) so various clients differ in what they do.
+The original Basic Authentication RFC never specifically set a character set for the encoding/decoding of the user name and password, and the superseding RFC 7616 only requires it 
+to be compatible with US ASCII (which limits the encoding to Utf8) so various clients differ in what encoding they use. You can switch been encodings by using the `EncodingPreference` 
+options property.
 
-The `BasicAuthenticationOptions` class contains the `EncodingPreference` property to allow you to select from four possible values, `Unicode`, `Latin1`, `PeferUnicode` and `PreferLatin1`.
-* `EncodingPreference.Unicode` will only decode using Unicode
+The `EncodingPreference` property to allow you to select from three possible values, `Utf8`, `Latin1`, and `PeferUtf8`.
+* `EncodingPreference.Utf8` will only decode using Unicode
 * `EncodingPreference.Latin1` will only attempt decoding using ISO-8859-1/Latin1.
-* `EncodingPreferencePreferUnicode` will first attempt to decode using Unicode, and if an exception is thrown during the Unicode decoding it will then attempt to decode using ISO-8859-1/Latin1.
+* `EncodingPreference.PreferUtf8` will first attempt to decode using Unicode, and if an exception is thrown during the Unicode decoding it will then attempt to decode using ISO-8859-1/Latin1.
 
 There is no fall back from Latin1 to Unicode as every possible byte sequence is a valid Latin1 string, so it will always decode "successfully", but not correctly if fed UTF8 encoded strings.
 

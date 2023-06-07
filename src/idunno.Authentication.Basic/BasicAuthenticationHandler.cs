@@ -84,7 +84,7 @@ namespace idunno.Authentication.Basic
 
                 try
                 {
-                    if (Options.EncodingPreference == EncodingPreference.Unicode)
+                    if (Options.EncodingPreference == EncodingPreference.Utf8)
                     {
                         decodedCredentials = _utf8ValidatingEncoding.GetString(base64DecodedCredentials);
                     }
@@ -92,7 +92,7 @@ namespace idunno.Authentication.Basic
                     {
                         decodedCredentials = _iso88591ValidatingEncoding.GetString(base64DecodedCredentials);
                     }
-                    else if (Options.EncodingPreference == EncodingPreference.PreferUnicode)
+                    else if (Options.EncodingPreference == EncodingPreference.PreferUtf8)
                     {
                         try
                         {
@@ -188,8 +188,8 @@ namespace idunno.Authentication.Basic
                     {
                         switch (Options.EncodingPreference)
                         {
-                            case EncodingPreference.Unicode:
-                            case EncodingPreference.PreferUnicode:
+                            case EncodingPreference.Utf8:
+                            case EncodingPreference.PreferUtf8:
                                 headerValue+= ", charset=\"UTF-8\"";
                                 break;
                             case EncodingPreference.Latin1:

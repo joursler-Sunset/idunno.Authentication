@@ -79,7 +79,7 @@ namespace idunno.Authentication.Basic
         /// <remarks>
         /// The default value for this setting is Unicode.
         /// </remarks>
-        public EncodingPreference EncodingPreference { get; set; } = EncodingPreference.Unicode;
+        public EncodingPreference EncodingPreference { get; set; } = EncodingPreference.Utf8;
 
         /// <summary>
         /// Sets or sets a value indicating whether the <see cref="EncodingPreference"/>
