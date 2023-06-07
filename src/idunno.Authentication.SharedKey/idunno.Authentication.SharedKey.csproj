@@ -12,13 +12,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <!-- nuget readme support -->
-  <PropertyGroup>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
-  </PropertyGroup>
-
-
-	<Choose>
+  <Choose>
     <When Condition=" '$(Configuration)'=='Debug' ">
       <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">

@@ -17,11 +17,6 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0" />
   </ItemGroup>
 
-  <!-- nuget readme support -->
-  <PropertyGroup>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
-  </PropertyGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
