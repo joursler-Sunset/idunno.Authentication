@@ -67,7 +67,7 @@ namespace idunno.Authentication.Basic.Test
         }
 
         [Fact]
-        public async Task NormalWithAuthRequestPassesThrough()
+        public async Task NormalWithAuthenticationRequestPassesThrough()
         {
             var server = CreateServer(new BasicAuthenticationOptions());
 

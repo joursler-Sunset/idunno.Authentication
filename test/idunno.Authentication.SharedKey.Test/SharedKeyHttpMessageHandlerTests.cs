@@ -37,7 +37,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.NotNull(requestLoggingHandler.Requests[0].Headers.Authorization);
             Assert.Equal("SharedKey", requestLoggingHandler.Requests[0].Headers.Authorization.Scheme);
         }
@@ -61,7 +61,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.NotNull(requestLoggingHandler.Requests[0].Headers.Date);
         }
 
@@ -87,7 +87,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.Equal(dateHeader, requestLoggingHandler.Requests[0].Headers.Date);
         }
 
@@ -110,7 +110,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.NotNull(requestLoggingHandler.Requests[0].Content.Headers.ContentMD5);
 
             using var md5 = MD5.Create();
@@ -138,7 +138,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.Null(requestLoggingHandler.Requests[0].Content.Headers.ContentMD5);
         }
 
@@ -160,7 +160,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.Null(requestLoggingHandler.Requests[0].Content);
         }
 
@@ -185,7 +185,7 @@ namespace idunno.Authentication.SharedKey.Test
                 };
             }
 
-            Assert.Equal(1, requestLoggingHandler.Requests.Count);
+            Assert.Single(requestLoggingHandler.Requests);
             Assert.Equal(keyID, requestLoggingHandler.Requests[0].Headers.Authorization.Parameter[..keyID.Length]);
         }
 
