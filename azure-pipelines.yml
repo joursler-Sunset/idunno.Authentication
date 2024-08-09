@@ -33,11 +33,11 @@ stages:
       vmImage: 'windows-latest'
 
     steps:
-    # .NET 7
+    # .NET 8
     - task: UseDotNet@2
-      displayName: 'Install .NET Core 7.0.x SDK'
+      displayName: 'Install .NET Core 8.0.x SDK'
       inputs:
-        version: '7.0.x'
+        version: '8.0.x'
         packageType: 'sdk'
 
     # .NET 6
@@ -49,7 +49,7 @@ stages:
 
     # .NET 3.1 sdk, needed for certificate authentication tests
     - task: UseDotNet@2
-      displayName: 'Install .NET Core 3.1 runtime'
+      displayName: 'Install .NET Core 3.1 SDK'
       inputs:
         version: '3.1.x'
         packageType: 'sdk'
