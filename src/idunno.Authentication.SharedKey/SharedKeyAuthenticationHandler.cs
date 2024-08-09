@@ -18,7 +18,16 @@ namespace idunno.Authentication.SharedKey
 {
     internal class SharedKeyAuthenticationHandler : AuthenticationHandler<SharedKeyAuthenticationOptions>
     {
+#if NET8_0_OR_GREATER
+        public SharedKeyAuthenticationHandler(
+            IOptionsMonitor<SharedKeyAuthenticationOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder) : base(options, logger, encoder)
+        {
+        }
 
+        [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
+#endif
         public SharedKeyAuthenticationHandler(
             IOptionsMonitor<SharedKeyAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -41,7 +50,12 @@ namespace idunno.Authentication.SharedKey
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+#if NET6_0_OR_GREATER
+            string? authorizationHeader = Request.Headers.Authorization;
+#else
             string? authorizationHeader = Request.Headers["Authorization"];
+#endif
+
             if (string.IsNullOrEmpty(authorizationHeader))
             {
                 return AuthenticateResult.NoResult();
@@ -160,8 +174,12 @@ namespace idunno.Authentication.SharedKey
                         }
                         Request.Body.Position = currentPosition;
 
+#if NET5_0_OR_GREATER
+                        var calculatedContentHash = MD5.HashData(new UTF8Encoding(false).GetBytes(body));
+#else
                         using var md5 = MD5.Create();
                         var calculatedContentHash = md5.ComputeHash(new UTF8Encoding(false).GetBytes(body));
+#endif
 
                         byte[] providedContentHash;
                         try

@@ -12,6 +12,10 @@ namespace idunno.Authentication.SharedKey
 {
     public class SharedKeyHttpMessageHandler : DelegatingHandler
     {
+
+#pragma warning disable IDE0079
+#pragma warning disable IDE0290
+
         public SharedKeyHttpMessageHandler(string keyId, byte[] key)
         {
             KeyId = keyId;
@@ -22,12 +26,20 @@ namespace idunno.Authentication.SharedKey
         {
         }
 
+#pragma warning restore IDE0290
+#pragma warning restore IDE0079
+
+
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+#if NET6_0_OR_GREATER            
+            ArgumentNullException.ThrowIfNull(request);
+#else
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
+#endif
 
             // Time stamp the request if it's not already timestamped so we can support expiry.
             if (request.Headers.Date == null)

@@ -5,6 +5,11 @@
     <Configurations>Debug;Release;CodeQL</Configurations>
   </PropertyGroup>
 
+	<PropertyGroup>
+    <!-- Supress out of support warnings -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Update="Views\**\*;Areas\**\Views">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

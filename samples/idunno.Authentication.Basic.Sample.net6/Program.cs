@@ -1,4 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using idunno.Authentication.Basic;
 using Microsoft.AspNetCore.Authorization;

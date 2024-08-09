@@ -19,10 +19,26 @@ namespace idunno.Authentication.Basic
     {
         private const string _Scheme = "Basic";
 
+#pragma warning disable IDE0079
+#pragma warning disable IDE0090
+
         private readonly UTF8Encoding _utf8ValidatingEncoding = new UTF8Encoding(false, true);
+
+#pragma warning restore IDE0090
+#pragma warning restore IDE0079
 
         private readonly Encoding _iso88591ValidatingEncoding = Encoding.GetEncoding("ISO-8859-1",new EncoderExceptionFallback(), new DecoderExceptionFallback());
 
+#if NET8_0_OR_GREATER
+        public BasicAuthenticationHandler(
+            IOptionsMonitor<BasicAuthenticationOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder) : base(options, logger, encoder)
+        {
+        }
+
+        [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
+#endif
         public BasicAuthenticationHandler(
             IOptionsMonitor<BasicAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -45,7 +61,12 @@ namespace idunno.Authentication.Basic
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+#if NET6_0_OR_GREATER
+            string authorizationHeader = Request.Headers.Authorization;
+#else
             string authorizationHeader = Request.Headers["Authorization"];
+#endif
+
             if (string.IsNullOrEmpty(authorizationHeader))
             {
                 return AuthenticateResult.NoResult();
@@ -105,7 +126,7 @@ namespace idunno.Authentication.Basic
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException(nameof(Options), "Unknown EncodingPrefence");
+                        throw new ArgumentOutOfRangeException(nameof(Options), "Unknown EncodingPreference");
                     }
                 }
                 catch (Exception ex)
