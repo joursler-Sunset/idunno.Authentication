@@ -72,7 +72,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 }
 ```
 
-For .NET 6 minimal templates
+For .NET 6 minimal templates / .NET 8 not using top level statements.
 
 ```c#
 var builder = WebApplication.CreateBuilder(args);

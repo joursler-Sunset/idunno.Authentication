@@ -12,10 +12,13 @@ Basic Authentication started as a demonstration of how to write authentication m
 for apis, webhooks and other things so here it is.
 
 Certificate Authentication was a common request on the ASP.NET Core Security repo, so I wrote one for ASP.NET Core 2.x.
-ASP.NET Core 3.0 took that as a starting point and includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1).
+ASP.NET Core 3.0 took that as a starting point and ASP.NET Core now includes Certificate Authentication as a [supported package](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/certauth?view=aspnetcore-3.1). 
+Please use that one.
 
 Shared Key Authentication is almost an implementation of the shared secret authentication Azure Blob Storage uses, with the Azure specific things like tenant identifier removed. If you're going to use
 this in a real project you should have someone else look over the hashing used to reassure yourself (and me) that it doesn't have any mistakes.
+
+As digest authentication typically requires passwords to be stored somewhere in plain text, or in an unsalted hash, there is no digest authentication implementation.
 
 ## ASP.NET Core versions supported
 
@@ -41,6 +44,7 @@ Azure Artifacts holds a [feed of current dev builds](https://dev.azure.com/idunn
 
 | Version | Notes |
 |---------|-------|
+|2.4.0    | Added .NET 8 support for Basic and SharedKey, including deprecating the use of [ISystemClock](https://learn.microsoft.com/en-us/dotnet/core/compatibility/aspnet-core/8.0/isystemclock-obsolete). |
 |2.3.1    | Added support for credential encoding character sets, latin1 and utf8 to Basic Authentication. |
 |2.3.0    | Added Shared key authentication<br>Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, ASP.NET 5.0, 6.0 and 7.0 |
 |2.2.3    | Basic authentication now multi-targets ASP.NET Core 2.1, 3.0, 3.1, .NET 5.0 and .NET 6.0 |
