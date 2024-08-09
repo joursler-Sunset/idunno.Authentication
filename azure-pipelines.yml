@@ -110,7 +110,7 @@ stages:
       artifact: BuildPackages
 
     # Publish Code Coverage results
-    - task: PublishCodeCoverageResults@1
+    - task: PublishCodeCoverageResults@2
       displayName: 'Publish Code Coverage Results'
       inputs:
         codeCoverageTool: cobertura
@@ -137,7 +137,7 @@ stages:
         displayName: 'Get unsignedPackages from build stage'
         artifact: BuildPackages
 
-      - task: NuGetAuthenticate@0
+      - task: NuGetAuthenticate@1
         displayName: 'NuGet Authenticate'
 
       - task: DotNetCoreCLI@2
