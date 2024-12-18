@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -27,7 +26,8 @@ namespace idunno.Authentication.Basic
 #pragma warning restore IDE0090
 #pragma warning restore IDE0079
 
-        private readonly Encoding _iso88591ValidatingEncoding = Encoding.GetEncoding("ISO-8859-1",new EncoderExceptionFallback(), new DecoderExceptionFallback());
+        private readonly Encoding _iso88591ValidatingEncoding =
+            Encoding.GetEncoding("ISO-8859-1", new EncoderExceptionFallback(), new DecoderExceptionFallback());
 
 #if NET8_0_OR_GREATER
         public BasicAuthenticationHandler(
@@ -41,9 +41,9 @@ namespace idunno.Authentication.Basic
 #endif
         public BasicAuthenticationHandler(
             IOptionsMonitor<BasicAuthenticationOptions> options,
-            ILoggerFactory logger,
-            UrlEncoder encoder,
-            ISystemClock clock) : base(options, logger, encoder, clock)
+            ILoggerFactory                              logger,
+            UrlEncoder                                  encoder,
+            ISystemClock                                clock) : base(options, logger, encoder, clock)
         {
         }
 
@@ -131,7 +131,8 @@ namespace idunno.Authentication.Basic
                 }
                 catch (Exception ex)
                 {
-                    const string failedToDecodeCredentials = "Cannot build credentials from decoded base64 value, exception {ex.Message} encountered.";
+                    const string failedToDecodeCredentials =
+                        "Cannot build credentials from decoded base64 value, exception {ex.Message} encountered.";
                     Logger.LogInformation(failedToDecodeCredentials, ex.Message);
                     return AuthenticateResult.Fail(ex.Message);
                 }
@@ -148,10 +149,10 @@ namespace idunno.Authentication.Basic
                 var password = decodedCredentials.Substring(delimiterIndex + 1);
 
                 var validateCredentialsContext = new ValidateCredentialsContext(Context, Scheme, Options)
-                {
-                    Username = username,
-                    Password = password
-                };
+                                                 {
+                                                     Username = username,
+                                                     Password = password
+                                                 };
 
                 await Events.ValidateCredentials(validateCredentialsContext);
 
@@ -162,7 +163,7 @@ namespace idunno.Authentication.Basic
                     return AuthenticateResult.Success(ticket);
                 }
 
-                if (validateCredentialsContext.Result != null &&
+                if (validateCredentialsContext.Result         != null &&
                     validateCredentialsContext.Result.Failure != null)
                 {
                     return AuthenticateResult.Fail(validateCredentialsContext.Result.Failure);
@@ -173,9 +174,9 @@ namespace idunno.Authentication.Basic
             catch (Exception ex)
             {
                 var authenticationFailedContext = new BasicAuthenticationFailedContext(Context, Scheme, Options)
-                {
-                    Exception = ex
-                };
+                                                  {
+                                                      Exception = ex
+                                                  };
 
                 await Events.AuthenticationFailed(authenticationFailedContext).ConfigureAwait(true);
 
@@ -202,7 +203,17 @@ namespace idunno.Authentication.Basic
             else
             {
                 Response.StatusCode = 401;
-                if (!Options.SuppressWWWAuthenticateHeader)
+
+                var suppressWWWAuthenticateHeader = Options.SuppressWWWAuthenticateHeader;
+
+                if (Options.SuppressWWWAuthenticateHeaderPathOverride.Any(x => Request.Path.StartsWithSegments(x,
+                                                                              StringComparison
+                                                                                  .InvariantCultureIgnoreCase)))
+                {
+                    suppressWWWAuthenticateHeader = !suppressWWWAuthenticateHeader;
+                }
+
+                if (!suppressWWWAuthenticateHeader)
                 {
                     var headerValue = _Scheme + $" realm=\"{Options.Realm}\"";
                     if (Options.AdvertiseEncodingPreference)
@@ -211,16 +222,16 @@ namespace idunno.Authentication.Basic
                         {
                             case EncodingPreference.Utf8:
                             case EncodingPreference.PreferUtf8:
-                                headerValue+= ", charset=\"UTF-8\"";
+                                headerValue += ", charset=\"UTF-8\"";
                                 break;
                             case EncodingPreference.Latin1:
                                 headerValue += ", charset=\"ISO-8859-1\"";
                                 break;
                             default:
                                 break;
-
                         }
                     }
+
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, headerValue);
                 }
             }

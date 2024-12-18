@@ -35,10 +35,7 @@ namespace idunno.Authentication.Basic
         /// </remarks>
         public string Realm
         {
-            get
-            {
-                return _realm;
-            }
+            get { return _realm; }
 
             set
             {
@@ -63,6 +60,21 @@ namespace idunno.Authentication.Basic
         /// 401 status code that you must react to yourself in your client code.
         /// </remarks>
         public bool SuppressWWWAuthenticateHeader { get; set; } = false;
+
+
+        /// <summary>
+        /// Reverses the SuppressWWWAuthenticateHeader for specific paths.
+        /// </summary>
+        /// /// <remarks>
+        /// The authentication scheme controls the browser UI and allows the browser to
+        /// authenticate in the correct manner, popping up a UI to allow for user name and password.
+        /// Some users may want to suppress this behaviour for JavaScript XMLHttpRequest requests while
+        /// also having www.example.com/libraryUi use basic auth while returning the WWW-Authenticate header to force a browser login prompt.
+        /// The switch happens based on Path StartsWith.
+        /// If SuppressWWWAuthenticateHeader is set to false, any path here will set the value to true.
+        /// If SuppressWWWAuthenticateHeader is set to true, any path here will set the value to false.
+        /// </remarks>
+        public string[] SuppressWWWAuthenticateHeaderPathOverride { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets a flag indicating if the handler will prompt for authentication on HTTP requests.
